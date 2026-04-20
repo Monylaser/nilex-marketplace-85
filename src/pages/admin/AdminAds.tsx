@@ -15,7 +15,7 @@ const AdminAds = () => {
 
   useEffect(() => { load(); }, []);
 
-  const setStatus = async (id: string, status: string) => {
+  const setStatus = async (id: string, status: "active" | "rejected" | "pending" | "sold" | "expired" | "draft") => {
     const { error } = await supabase.from("ads").update({ status }).eq("id", id);
     if (error) return toast.error(error.message);
     toast.success(`Ad ${status}`);
