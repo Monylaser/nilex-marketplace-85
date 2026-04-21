@@ -11,6 +11,8 @@ import Auth from "./pages/Auth";
 import Browse from "./pages/Browse";
 import AdDetail from "./pages/AdDetail";
 import Profile from "./pages/Profile";
+import Chat from "./pages/Chat";
+import ChatThread from "./pages/ChatThread";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminAds from "./pages/admin/AdminAds";
@@ -36,6 +38,8 @@ const App = () => (
             <Route path="/ad/:id" element={<AdDetail />} />
             <Route path="/post-ad" element={<ProtectedRoute><PostAd /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+            <Route path="/chat/:userId" element={<ProtectedRoute><ChatThread /></ProtectedRoute>} />
             <Route
               path="/admin"
               element={

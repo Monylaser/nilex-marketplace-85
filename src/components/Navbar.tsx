@@ -1,9 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Menu, X, User, LogOut, Shield } from "lucide-react";
-import { useState } from "react";
+import { Plus, Menu, X, User, LogOut, Shield, MessageCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { playNotifySound, requestNotifyPermission, showBrowserNotification } from "@/lib/notifySound";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +20,32 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+  const unread = useUnreadMessages();
+
+  // Global new-message toast/sound (works on any page when chat is not open)
+  useEffect(() => {
+    if (!user) return;
+    requestNotifyPermission();
+    const ch = supabase
+      .channel(`global-msg-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages", filter: `receiver_id=eq.${user.id}` },
+        async (payload) => {
+          const m: any = payload.new;
+          // Skip if user is already viewing this thread
+          if (window.location.pathname === `/chat/${m.sender_id}`) return;
+          playNotifySound();
+          const { data: p } = await supabase
+            .from("profiles").select("name").eq("id", m.sender_id).maybeSingle();
+          showBrowserNotification(`New message from ${p?.name || "User"}`, m.message.slice(0, 80));
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -42,27 +72,43 @@ const Navbar = () => {
           </Link>
 
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <>
+              <Link to="/chat" className="relative">
                 <Button variant="ghost" size="icon" className="rounded-full">
-                  <User className="h-5 w-5" />
+                  <MessageCircle className="h-5 w-5" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => navigate("/profile")}>
-                  <User className="mr-2 h-4 w-4" /> My account
-                </DropdownMenuItem>
-                {isAdmin && (
-                  <DropdownMenuItem onClick={() => navigate("/admin")}>
-                    <Shield className="mr-2 h-4 w-4" /> Admin panel
-                  </DropdownMenuItem>
+                {unread > 0 && (
+                  <Badge className="absolute -right-1 -top-1 h-5 min-w-5 px-1 bg-gold text-accent-foreground text-[10px] flex items-center justify-center rounded-full">
+                    {unread > 9 ? "9+" : unread}
+                  </Badge>
                 )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <LogOut className="mr-2 h-4 w-4" /> Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    <User className="mr-2 h-4 w-4" /> My account
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/chat")}>
+                    <MessageCircle className="mr-2 h-4 w-4" /> Messages
+                    {unread > 0 && <Badge className="ml-auto bg-gold text-accent-foreground">{unread}</Badge>}
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                      <Shield className="mr-2 h-4 w-4" /> Admin panel
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" /> Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : (
             <Link to="/auth"><Button variant="outline" size="sm">Sign in</Button></Link>
           )}
@@ -93,6 +139,10 @@ const Navbar = () => {
               </Link>
               {user ? (
                 <>
+                  <Link to="/chat" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 flex items-center gap-2">
+                    Messages
+                    {unread > 0 && <Badge className="bg-gold text-accent-foreground">{unread}</Badge>}
+                  </Link>
                   <Link to="/profile" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">My account</Link>
                   {isAdmin && <Link to="/admin" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">Admin panel</Link>}
                   <Button variant="outline" size="sm" onClick={() => { handleSignOut(); setMobileOpen(false); }}>Sign out</Button>

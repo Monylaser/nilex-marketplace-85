@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, MapPin, Eye, Loader2, Send, User as UserIcon } from "lucide-react";
+import { Heart, MapPin, Eye, Loader2, Send, User as UserIcon, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const AdDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [ad, setAd] = useState<any>(null);
   const [seller, setSeller] = useState<any>(null);
@@ -161,6 +162,15 @@ const AdDetail = () => {
                 <p className="text-xs text-muted-foreground">{seller?.total_points || 0} points</p>
               </div>
             </div>
+            {seller?.id && user && seller.id !== user.id && (
+              <Button
+                variant="outline"
+                className="mt-4 w-full gap-2"
+                onClick={() => navigate(`/chat/${seller.id}`)}
+              >
+                <MessageCircle className="h-4 w-4" /> Open chat
+              </Button>
+            )}
           </Card>
 
           <Card className="p-5">
