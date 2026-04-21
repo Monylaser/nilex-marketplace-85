@@ -138,7 +138,15 @@ const NotificationSettings = () => {
             </p>
           </div>
         </div>
-        <Switch id="sound-toggle" checked={!muted} onCheckedChange={(v) => toggleMute(!v)} />
+        <div className="flex items-center gap-2">
+          {saving && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          <Switch
+            id="sound-toggle"
+            checked={!muted}
+            disabled={!loaded || saving}
+            onCheckedChange={(v) => toggleMute(!v)}
+          />
+        </div>
       </div>
 
       <Button variant="outline" size="sm" onClick={previewSound} disabled={muted}>
