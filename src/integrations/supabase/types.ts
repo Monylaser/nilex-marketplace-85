@@ -522,6 +522,8 @@ export type Database = {
           is_active: boolean
           last_seen: string | null
           name: string | null
+          notify_chat_enabled: boolean
+          notify_listings_enabled: boolean
           notify_sound_muted: boolean
           phone: string | null
           phone_verified_at: string | null
@@ -539,6 +541,8 @@ export type Database = {
           is_active?: boolean
           last_seen?: string | null
           name?: string | null
+          notify_chat_enabled?: boolean
+          notify_listings_enabled?: boolean
           notify_sound_muted?: boolean
           phone?: string | null
           phone_verified_at?: string | null
@@ -556,6 +560,8 @@ export type Database = {
           is_active?: boolean
           last_seen?: string | null
           name?: string | null
+          notify_chat_enabled?: boolean
+          notify_listings_enabled?: boolean
           notify_sound_muted?: boolean
           phone?: string | null
           phone_verified_at?: string | null
