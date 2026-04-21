@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { useNotifyPrefs } from "@/hooks/useNotifyPrefs";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { playNotifySound, requestNotifyPermission, showBrowserNotification } from "@/lib/notifySound";
@@ -21,6 +22,7 @@ const Navbar = () => {
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const unread = useUnreadMessages();
+  const prefs = useNotifyPrefs();
 
   // Global new-message toast/sound (works on any page when chat is not open)
   useEffect(() => {
@@ -32,6 +34,8 @@ const Navbar = () => {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages", filter: `receiver_id=eq.${user.id}` },
         async (payload) => {
+          // Respect chat-category preference
+          if (!prefs.chatEnabled) return;
           const m: any = payload.new;
           // Skip if user is already viewing this thread
           if (window.location.pathname === `/chat/${m.sender_id}`) return;
@@ -45,7 +49,7 @@ const Navbar = () => {
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [user]);
+  }, [user, prefs.chatEnabled]);
 
   const handleSignOut = async () => {
     await signOut();

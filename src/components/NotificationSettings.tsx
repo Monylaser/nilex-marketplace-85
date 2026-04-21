@@ -82,9 +82,11 @@ const NotificationSettings = () => {
 
     if (user) {
       setSavingKey(key);
+      const patch: Record<string, boolean> = { [COL_MAP[key]]: value as boolean };
       const { error } = await supabase
         .from("profiles")
-        .update({ [COL_MAP[key]]: value })
+        // typed columns are conditional; cast the patch to satisfy the generated Update type
+        .update(patch as never)
         .eq("id", user.id);
       setSavingKey(null);
       if (error) {
