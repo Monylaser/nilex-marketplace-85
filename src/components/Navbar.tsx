@@ -72,27 +72,43 @@ const Navbar = () => {
           </Link>
 
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <>
+              <Link to="/chat" className="relative">
                 <Button variant="ghost" size="icon" className="rounded-full">
-                  <User className="h-5 w-5" />
+                  <MessageCircle className="h-5 w-5" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => navigate("/profile")}>
-                  <User className="mr-2 h-4 w-4" /> My account
-                </DropdownMenuItem>
-                {isAdmin && (
-                  <DropdownMenuItem onClick={() => navigate("/admin")}>
-                    <Shield className="mr-2 h-4 w-4" /> Admin panel
-                  </DropdownMenuItem>
+                {unread > 0 && (
+                  <Badge className="absolute -right-1 -top-1 h-5 min-w-5 px-1 bg-gold text-accent-foreground text-[10px] flex items-center justify-center rounded-full">
+                    {unread > 9 ? "9+" : unread}
+                  </Badge>
                 )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <LogOut className="mr-2 h-4 w-4" /> Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    <User className="mr-2 h-4 w-4" /> My account
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/chat")}>
+                    <MessageCircle className="mr-2 h-4 w-4" /> Messages
+                    {unread > 0 && <Badge className="ml-auto bg-gold text-accent-foreground">{unread}</Badge>}
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                      <Shield className="mr-2 h-4 w-4" /> Admin panel
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" /> Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : (
             <Link to="/auth"><Button variant="outline" size="sm">Sign in</Button></Link>
           )}
@@ -123,6 +139,10 @@ const Navbar = () => {
               </Link>
               {user ? (
                 <>
+                  <Link to="/chat" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 flex items-center gap-2">
+                    Messages
+                    {unread > 0 && <Badge className="bg-gold text-accent-foreground">{unread}</Badge>}
+                  </Link>
                   <Link to="/profile" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">My account</Link>
                   {isAdmin && <Link to="/admin" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">Admin panel</Link>}
                   <Button variant="outline" size="sm" onClick={() => { handleSignOut(); setMobileOpen(false); }}>Sign out</Button>
