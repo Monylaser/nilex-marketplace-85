@@ -3,9 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, Volume2, VolumeX, Loader2 } from "lucide-react";
+import { Bell, BellOff, Volume2, VolumeX, Loader2, MessageCircle, Tag } from "lucide-react";
 import {
-  isNotifySoundMuted,
   setNotifySoundMuted,
   playNotifySound,
   unlockNotifySound,
@@ -23,35 +22,50 @@ const getPerm = (): PermState => {
   return Notification.permission as PermState;
 };
 
+interface Prefs {
+  soundMuted: boolean;
+  chatEnabled: boolean;
+  listingsEnabled: boolean;
+}
+
+const DEFAULTS: Prefs = { soundMuted: false, chatEnabled: true, listingsEnabled: true };
+
+const COL_MAP: Record<keyof Prefs, string> = {
+  soundMuted: "notify_sound_muted",
+  chatEnabled: "notify_chat_enabled",
+  listingsEnabled: "notify_listings_enabled",
+};
+
 const NotificationSettings = () => {
   const { user } = useAuth();
-  const [muted, setMuted] = useState<boolean>(false);
+  const [prefs, setPrefs] = useState<Prefs>(DEFAULTS);
   const [perm, setPerm] = useState<PermState>("default");
-  const [saving, setSaving] = useState(false);
+  const [savingKey, setSavingKey] = useState<keyof Prefs | null>(null);
   const [loaded, setLoaded] = useState(false);
 
-  // Load preference: prefer DB (per-user, cross-device), fall back to localStorage cache
   useEffect(() => {
     setPerm(getPerm());
     let cancelled = false;
 
     (async () => {
-      // Show cached value instantly
-      setMuted(isNotifySoundMuted());
-
       if (!user) {
         setLoaded(true);
         return;
       }
       const { data, error } = await supabase
         .from("profiles")
-        .select("notify_sound_muted")
+        .select("notify_sound_muted,notify_chat_enabled,notify_listings_enabled")
         .eq("id", user.id)
         .maybeSingle();
       if (cancelled) return;
-      if (!error && data && typeof data.notify_sound_muted === "boolean") {
-        setMuted(data.notify_sound_muted);
-        setNotifySoundMuted(data.notify_sound_muted); // sync local cache
+      if (!error && data) {
+        const next: Prefs = {
+          soundMuted: !!data.notify_sound_muted,
+          chatEnabled: data.notify_chat_enabled ?? true,
+          listingsEnabled: data.notify_listings_enabled ?? true,
+        };
+        setPrefs(next);
+        setNotifySoundMuted(next.soundMuted);
       }
       setLoaded(true);
     })();
@@ -61,35 +75,35 @@ const NotificationSettings = () => {
     };
   }, [user]);
 
-  const toggleMute = async (next: boolean) => {
-    setMuted(next);
-    setNotifySoundMuted(next); // local cache (immediate)
+  const updatePref = async <K extends keyof Prefs>(key: K, value: Prefs[K]) => {
+    const prev = prefs[key];
+    setPrefs((p) => ({ ...p, [key]: value }));
+    if (key === "soundMuted") setNotifySoundMuted(value as boolean);
 
     if (user) {
-      setSaving(true);
+      setSavingKey(key);
       const { error } = await supabase
         .from("profiles")
-        .update({ notify_sound_muted: next })
+        .update({ [COL_MAP[key]]: value })
         .eq("id", user.id);
-      setSaving(false);
+      setSavingKey(null);
       if (error) {
         toast.error("Couldn't save preference");
-        // revert
-        setMuted(!next);
-        setNotifySoundMuted(!next);
+        setPrefs((p) => ({ ...p, [key]: prev }));
+        if (key === "soundMuted") setNotifySoundMuted(prev as boolean);
         return;
       }
     }
 
-    if (!next) {
-      // Unlock + preview when turning sound back on (we're inside a user gesture)
+    // Friendly preview when turning sound back on (we're inside a user gesture)
+    if (key === "soundMuted" && value === false) {
       await unlockNotifySound();
       await playNotifySound();
     }
   };
 
   const previewSound = async () => {
-    if (muted) {
+    if (prefs.soundMuted) {
       toast.error("Sound is muted. Turn it on first.");
       return;
     }
@@ -101,7 +115,7 @@ const NotificationSettings = () => {
     const ok = await requestNotifyPermission();
     setPerm(getPerm());
     if (ok) {
-      showBrowserNotification("Notifications enabled", "You'll be notified of new messages.", {
+      showBrowserNotification("Notifications enabled", "You'll be notified of new activity.", {
         force: true,
       });
       toast.success("Browser notifications enabled");
@@ -110,51 +124,103 @@ const NotificationSettings = () => {
     }
   };
 
+  const Row = ({
+    icon,
+    title,
+    desc,
+    prefKey,
+    invert = false,
+  }: {
+    icon: React.ReactNode;
+    title: string;
+    desc: string;
+    prefKey: keyof Prefs;
+    /** If true, the switch shows ON when pref is FALSE (used for soundMuted). */
+    invert?: boolean;
+  }) => {
+    const raw = prefs[prefKey];
+    const checked = invert ? !raw : raw;
+    return (
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          {icon}
+          <div>
+            <Label htmlFor={prefKey} className="font-medium cursor-pointer">
+              {title}
+            </Label>
+            <p className="text-xs text-muted-foreground">{desc}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {savingKey === prefKey && (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          )}
+          <Switch
+            id={prefKey}
+            checked={checked}
+            disabled={!loaded || savingKey !== null}
+            onCheckedChange={(v) => updatePref(prefKey, (invert ? !v : v) as never)}
+          />
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <Card className="p-5 space-y-5">
+    <Card className="p-5 space-y-6">
       <div>
         <h3 className="font-display text-lg font-semibold flex items-center gap-2">
           <Bell className="h-5 w-5 text-gold" /> Notifications & sound
         </h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Control how you're alerted when new messages arrive.
+          Choose what you're alerted about and how.
         </p>
       </div>
 
-      {/* Sound mute toggle */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-start gap-3">
-          {muted ? (
-            <VolumeX className="h-5 w-5 text-muted-foreground mt-0.5" />
-          ) : (
-            <Volume2 className="h-5 w-5 text-foreground mt-0.5" />
-          )}
-          <div>
-            <Label htmlFor="sound-toggle" className="font-medium cursor-pointer">
-              Notification sound
-            </Label>
-            <p className="text-xs text-muted-foreground">
-              Play a soft chime when a new message arrives.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {saving && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-          <Switch
-            id="sound-toggle"
-            checked={!muted}
-            disabled={!loaded || saving}
-            onCheckedChange={(v) => toggleMute(!v)}
-          />
-        </div>
+      {/* Categories */}
+      <div className="space-y-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Categories
+        </p>
+        <Row
+          icon={<MessageCircle className="h-5 w-5 text-foreground mt-0.5" />}
+          title="Chat messages"
+          desc="New messages from buyers and sellers."
+          prefKey="chatEnabled"
+        />
+        <Row
+          icon={<Tag className="h-5 w-5 text-foreground mt-0.5" />}
+          title="Listing alerts"
+          desc="Ad approvals, expirations, and saved-search matches."
+          prefKey="listingsEnabled"
+        />
       </div>
 
-      <Button variant="outline" size="sm" onClick={previewSound} disabled={muted}>
-        Preview sound
-      </Button>
+      {/* Sound */}
+      <div className="border-t border-border pt-5 space-y-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Sound
+        </p>
+        <Row
+          icon={
+            prefs.soundMuted ? (
+              <VolumeX className="h-5 w-5 text-muted-foreground mt-0.5" />
+            ) : (
+              <Volume2 className="h-5 w-5 text-foreground mt-0.5" />
+            )
+          }
+          title="Notification sound"
+          desc="Play a soft chime when an alert arrives."
+          prefKey="soundMuted"
+          invert
+        />
+        <Button variant="outline" size="sm" onClick={previewSound} disabled={prefs.soundMuted}>
+          Preview sound
+        </Button>
+      </div>
 
+      {/* Browser permission */}
       <div className="border-t border-border pt-5">
-        {/* Browser notifications */}
         <div className="flex items-start gap-3">
           {perm === "granted" ? (
             <Bell className="h-5 w-5 text-foreground mt-0.5" />
@@ -165,7 +231,7 @@ const NotificationSettings = () => {
             <p className="font-medium">Browser notifications</p>
             <p className="text-xs text-muted-foreground">
               {perm === "granted" && "Enabled — you'll see a popup when the tab isn't focused."}
-              {perm === "default" && "Get a desktop popup when a new message arrives."}
+              {perm === "default" && "Get a desktop popup for the categories you've enabled above."}
               {perm === "denied" && "Blocked. Enable notifications in your browser site settings."}
               {perm === "unsupported" && "Your browser does not support notifications."}
             </p>
