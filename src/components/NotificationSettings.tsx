@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, Volume2, VolumeX } from "lucide-react";
+import { Bell, BellOff, Volume2, VolumeX, Loader2 } from "lucide-react";
 import {
   isNotifySoundMuted,
   setNotifySoundMuted,
@@ -13,6 +13,8 @@ import {
   showBrowserNotification,
 } from "@/lib/notifySound";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 type PermState = "default" | "granted" | "denied" | "unsupported";
 
@@ -22,17 +24,63 @@ const getPerm = (): PermState => {
 };
 
 const NotificationSettings = () => {
+  const { user } = useAuth();
   const [muted, setMuted] = useState<boolean>(false);
   const [perm, setPerm] = useState<PermState>("default");
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
+  // Load preference: prefer DB (per-user, cross-device), fall back to localStorage cache
   useEffect(() => {
-    setMuted(isNotifySoundMuted());
     setPerm(getPerm());
-  }, []);
+    let cancelled = false;
+
+    (async () => {
+      // Show cached value instantly
+      setMuted(isNotifySoundMuted());
+
+      if (!user) {
+        setLoaded(true);
+        return;
+      }
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("notify_sound_muted")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      if (!error && data && typeof data.notify_sound_muted === "boolean") {
+        setMuted(data.notify_sound_muted);
+        setNotifySoundMuted(data.notify_sound_muted); // sync local cache
+      }
+      setLoaded(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const toggleMute = async (next: boolean) => {
     setMuted(next);
-    setNotifySoundMuted(next);
+    setNotifySoundMuted(next); // local cache (immediate)
+
+    if (user) {
+      setSaving(true);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ notify_sound_muted: next })
+        .eq("id", user.id);
+      setSaving(false);
+      if (error) {
+        toast.error("Couldn't save preference");
+        // revert
+        setMuted(!next);
+        setNotifySoundMuted(!next);
+        return;
+      }
+    }
+
     if (!next) {
       // Unlock + preview when turning sound back on (we're inside a user gesture)
       await unlockNotifySound();
@@ -90,7 +138,15 @@ const NotificationSettings = () => {
             </p>
           </div>
         </div>
-        <Switch id="sound-toggle" checked={!muted} onCheckedChange={(v) => toggleMute(!v)} />
+        <div className="flex items-center gap-2">
+          {saving && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          <Switch
+            id="sound-toggle"
+            checked={!muted}
+            disabled={!loaded || saving}
+            onCheckedChange={(v) => toggleMute(!v)}
+          />
+        </div>
       </div>
 
       <Button variant="outline" size="sm" onClick={previewSound} disabled={muted}>
