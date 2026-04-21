@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import NotificationSettings from "@/components/NotificationSettings";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -90,6 +91,7 @@ const Profile = () => {
             <TabsTrigger value="favs">Favorites ({favs.length})</TabsTrigger>
             <TabsTrigger value="msgs">Messages</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="ads" className="mt-6 space-y-3">
@@ -151,6 +153,10 @@ const Profile = () => {
             <div className="space-y-2"><Label>City</Label>
               <Input value={profile?.city || ""} onChange={(e) => setProfile({ ...profile, city: e.target.value })} /></div>
             <Button variant="gold" onClick={saveProfile}>Save changes</Button>
+          </TabsContent>
+
+          <TabsContent value="settings" className="mt-6 max-w-lg">
+            <NotificationSettings />
           </TabsContent>
         </Tabs>
       </div>
