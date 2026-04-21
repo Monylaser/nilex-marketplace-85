@@ -1,9 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Menu, X, User, LogOut, Shield } from "lucide-react";
-import { useState } from "react";
+import { Plus, Menu, X, User, LogOut, Shield, MessageCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { playNotifySound, requestNotifyPermission, showBrowserNotification } from "@/lib/notifySound";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +20,32 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+  const unread = useUnreadMessages();
+
+  // Global new-message toast/sound (works on any page when chat is not open)
+  useEffect(() => {
+    if (!user) return;
+    requestNotifyPermission();
+    const ch = supabase
+      .channel(`global-msg-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages", filter: `receiver_id=eq.${user.id}` },
+        async (payload) => {
+          const m: any = payload.new;
+          // Skip if user is already viewing this thread
+          if (window.location.pathname === `/chat/${m.sender_id}`) return;
+          playNotifySound();
+          const { data: p } = await supabase
+            .from("profiles").select("name").eq("id", m.sender_id).maybeSingle();
+          showBrowserNotification(`New message from ${p?.name || "User"}`, m.message.slice(0, 80));
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
