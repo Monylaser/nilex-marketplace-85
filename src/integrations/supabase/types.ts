@@ -24,6 +24,8 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           description: string
+          embedding: string | null
+          embedding_updated_at: string | null
           governorate: string
           id: string
           images_json: Json
@@ -47,6 +49,8 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           description: string
+          embedding?: string | null
+          embedding_updated_at?: string | null
           governorate: string
           id?: string
           images_json?: Json
@@ -70,6 +74,8 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           description?: string
+          embedding?: string | null
+          embedding_updated_at?: string | null
           governorate?: string
           id?: string
           images_json?: Json
@@ -653,6 +659,63 @@ export type Database = {
         }
         Relationships: []
       }
+      search_analytics: {
+        Row: {
+          created_at: string
+          id: string
+          mode: string
+          query: string
+          results_count: number
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mode?: string
+          query: string
+          results_count?: number
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mode?: string
+          query?: string
+          results_count?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      search_queue: {
+        Row: {
+          ad_id: string
+          attempts: number
+          created_at: string
+          error: string | null
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          ad_id: string
+          attempts?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          ad_id?: string
+          attempts?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           created_at: string
@@ -771,6 +834,26 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      search_ads: {
+        Args: {
+          match_count?: number
+          min_similarity?: number
+          query_embedding: string
+        }
+        Returns: {
+          category_id: number
+          city: string
+          created_at: string
+          governorate: string
+          id: string
+          images_json: Json
+          is_boosted: boolean
+          price: number
+          similarity: number
+          title: string
+          views: number
+        }[]
       }
     }
     Enums: {

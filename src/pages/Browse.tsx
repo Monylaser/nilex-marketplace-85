@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -7,7 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Eye, Loader2, Sparkles } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { MapPin, Eye, Loader2, Sparkles, Wand2 } from "lucide-react";
+import { useAiSearchPref } from "@/hooks/useAiSearch";
 
 interface Ad {
   id: string;
@@ -19,6 +22,7 @@ interface Ad {
   is_boosted: boolean;
   images_json: any;
   created_at: string;
+  similarity?: number;
   categories?: { name: string; slug: string } | null;
 }
 
@@ -28,6 +32,8 @@ const Browse = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [governorates, setGovernorates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchMode, setSearchMode] = useState<"ai" | "keyword" | null>(null);
+  const { enabled: aiEnabled, setEnabled: setAiEnabled } = useAiSearchPref();
 
   const q = params.get("q") || "";
   const cat = params.get("category") || "all";
@@ -43,28 +49,74 @@ const Browse = () => {
     });
   }, []);
 
+  const catId = useMemo(() => {
+    if (cat === "all") return null;
+    return categories.find((x) => x.slug === cat)?.id ?? null;
+  }, [cat, categories]);
+
   useEffect(() => {
-    setLoading(true);
-    let query = supabase
-      .from("ads")
-      .select("id,title,price,governorate,city,views,is_boosted,images_json,created_at,categories(name,slug)")
-      .eq("status", "active")
-      .order("is_boosted", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(60);
+    let cancelled = false;
+    const run = async () => {
+      setLoading(true);
+      setSearchMode(null);
 
-    if (q) query = query.ilike("title", `%${q}%`);
-    if (cat !== "all") {
-      const c = categories.find((x) => x.slug === cat);
-      if (c) query = query.eq("category_id", c.id);
-    }
-    if (gov !== "all") query = query.eq("governorate", gov);
+      // AI search path: only when user typed a query AND opted in
+      if (aiEnabled && q.trim().length > 0) {
+        try {
+          const { data, error } = await supabase.functions.invoke("ai-search", {
+            body: undefined,
+            method: "GET" as any,
+            // supabase-js v2 doesn't fully support GET query params via invoke; use direct fetch instead
+          } as any);
+          // Fallback to raw fetch which supports query strings cleanly
+          const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/ai-search?q=${encodeURIComponent(q)}&limit=40`;
+          const headers: Record<string, string> = {
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+          };
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
+          const resp = await fetch(url, { headers });
+          if (resp.ok) {
+            const json = await resp.json();
+            if (cancelled) return;
+            let results: Ad[] = json.results || [];
+            // Apply local category/governorate filters on top of AI results
+            if (catId) results = results.filter((r: any) => r.category_id === catId);
+            if (gov !== "all") results = results.filter((r) => r.governorate === gov);
+            setAds(results);
+            setSearchMode(json.mode === "keyword" ? "keyword" : "ai");
+            setLoading(false);
+            return;
+          }
+          // swallow and fall through to keyword
+          void error; void data;
+        } catch {
+          // fall through
+        }
+      }
 
-    query.then(({ data }) => {
+      // Keyword (existing) path
+      let query = supabase
+        .from("ads")
+        .select("id,title,price,governorate,city,views,is_boosted,images_json,created_at,categories(name,slug)")
+        .eq("status", "active")
+        .order("is_boosted", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(60);
+
+      if (q) query = query.ilike("title", `%${q}%`);
+      if (catId) query = query.eq("category_id", catId);
+      if (gov !== "all") query = query.eq("governorate", gov);
+
+      const { data } = await query;
+      if (cancelled) return;
       setAds((data as any) || []);
+      setSearchMode("keyword");
       setLoading(false);
-    });
-  }, [q, cat, gov, categories]);
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [q, catId, gov, aiEnabled]);
 
   const update = (key: string, value: string) => {
     const next = new URLSearchParams(params);
@@ -77,11 +129,18 @@ const Browse = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container py-8">
-        <h1 className="font-display text-3xl font-bold">Browse Ads</h1>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h1 className="font-display text-3xl font-bold">Browse Ads</h1>
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
+            <Wand2 className="h-4 w-4 text-gold" />
+            <Label htmlFor="ai-search" className="text-sm cursor-pointer">AI Search</Label>
+            <Switch id="ai-search" checked={aiEnabled} onCheckedChange={setAiEnabled} />
+          </div>
+        </div>
 
         <div className="mt-6 grid gap-3 md:grid-cols-[1fr_220px_220px]">
           <Input
-            placeholder="Search ads…"
+            placeholder={aiEnabled ? "Try: عربية صغيرة موفرة بنزين" : "Search ads…"}
             defaultValue={q}
             onKeyDown={(e) => e.key === "Enter" && update("q", (e.target as HTMLInputElement).value)}
           />
@@ -105,6 +164,16 @@ const Browse = () => {
           </Select>
         </div>
 
+        {q && searchMode && !loading && (
+          <p className="mt-3 text-xs text-muted-foreground">
+            {searchMode === "ai"
+              ? <>✨ AI semantic results for <span className="font-medium text-foreground">"{q}"</span></>
+              : aiEnabled
+                ? <>AI returned no matches — showing keyword results for <span className="font-medium text-foreground">"{q}"</span></>
+                : <>Keyword results for <span className="font-medium text-foreground">"{q}"</span></>}
+          </p>
+        )}
+
         {loading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -127,6 +196,11 @@ const Browse = () => {
                       {ad.is_boosted && (
                         <Badge className="absolute left-2 top-2 gap-1 bg-gold text-accent-foreground">
                           <Sparkles className="h-3 w-3" /> Boosted
+                        </Badge>
+                      )}
+                      {typeof ad.similarity === "number" && (
+                        <Badge variant="secondary" className="absolute right-2 top-2 text-[10px]">
+                          {Math.round(ad.similarity * 100)}% match
                         </Badge>
                       )}
                     </div>
