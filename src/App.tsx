@@ -20,6 +20,7 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminCategories from "./pages/admin/AdminCategories";
 import AdminBanners from "./pages/admin/AdminBanners";
 import AdminBoostPackages from "./pages/admin/AdminBoostPackages";
+import AdminSearch from "./pages/admin/AdminSearch";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="categories" element={<AdminCategories />} />
               <Route path="banners" element={<AdminBanners />} />
               <Route path="boost-packages" element={<AdminBoostPackages />} />
+              <Route path="search" element={<AdminSearch />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
