@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import AiAdAssistant, { type AiResult } from "@/components/AiAdAssistant";
 
 const PostAd = () => {
   const navigate = useNavigate();
@@ -102,6 +103,26 @@ const PostAd = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-display text-3xl font-bold md:text-4xl">Post Your Ad</h1>
           <p className="mt-2 text-muted-foreground">Reach millions of buyers across Egypt</p>
+
+          <div className="mt-6">
+            <AiAdAssistant
+              categoriesHint={categories.map((c) => c.name).join(", ")}
+              onApply={(r: AiResult) => {
+                const matched = categories.find(
+                  (c) => r.category && c.name.toLowerCase() === r.category.toLowerCase(),
+                );
+                const suggestedPrice = Math.round((r.price_min + r.price_max) / 2);
+                setForm((f) => ({
+                  ...f,
+                  title: r.title || f.title,
+                  description: r.description || f.description,
+                  condition: r.condition || f.condition,
+                  price: f.price || String(suggestedPrice),
+                  category_id: matched ? String(matched.id) : f.category_id,
+                }));
+              }}
+            />
+          </div>
 
           <form onSubmit={submit} className="mt-8 space-y-5">
             <div className="space-y-2">
