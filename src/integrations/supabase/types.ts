@@ -504,6 +504,39 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_otps: {
+        Row: {
+          attempts: number
+          code_hash: string
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          phone: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          phone: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       point_transactions: {
         Row: {
           created_at: string
@@ -556,6 +589,7 @@ export type Database = {
           phone_verified_at: string | null
           total_points: number
           updated_at: string
+          verification_level: number
         }
         Insert: {
           avatar?: string | null
@@ -575,6 +609,7 @@ export type Database = {
           phone_verified_at?: string | null
           total_points?: number
           updated_at?: string
+          verification_level?: number
         }
         Update: {
           avatar?: string | null
@@ -594,6 +629,7 @@ export type Database = {
           phone_verified_at?: string | null
           total_points?: number
           updated_at?: string
+          verification_level?: number
         }
         Relationships: []
       }
@@ -820,6 +856,45 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      verifications: {
+        Row: {
+          created_at: string
+          documents_json: Json
+          expires_at: string | null
+          id: string
+          level: number
+          notes: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          documents_json?: Json
+          expires_at?: string | null
+          id?: string
+          level: number
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          documents_json?: Json
+          expires_at?: string | null
+          id?: string
+          level?: number
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
         }
         Relationships: []
       }
