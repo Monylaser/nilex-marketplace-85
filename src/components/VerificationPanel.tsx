@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import {
   Loader2,
   Check,
   AlertCircle,
+  Timer,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +19,7 @@ import { toast } from "sonner";
 import VerificationBadge from "@/components/VerificationBadge";
 
 const EG_PHONE = /^\+20(10|11|12|15)\d{8}$/;
+const RESEND_COOLDOWN_SECONDS = 60;
 
 const VerificationPanel = () => {
   const { user } = useAuth();
