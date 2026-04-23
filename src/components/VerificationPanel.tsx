@@ -31,7 +31,17 @@ const VerificationPanel = () => {
   const [devCode, setDevCode] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
   const emailConfirmed = !!user?.email_confirmed_at;
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const interval = setInterval(() => {
+      setResendTimer((t) => t - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [resendTimer]);
 
   useEffect(() => {
     if (!user) return;
