@@ -98,10 +98,10 @@ const Browse = () => {
         }
       }
 
-      // Keyword (existing) path — also pull seller verification level for ranking + badge
+      // Keyword (existing) path
       let query = supabase
         .from("ads")
-        .select("id,title,price,governorate,city,views,is_boosted,images_json,created_at,user_id,categories(name,slug),profiles!ads_user_id_fkey(verification_level)")
+        .select("id,title,price,governorate,city,views,is_boosted,images_json,created_at,user_id,categories(name,slug)")
         .eq("status", "active")
         .order("is_boosted", { ascending: false })
         .order("created_at", { ascending: false })
@@ -113,10 +113,22 @@ const Browse = () => {
 
       const { data } = await query;
       if (cancelled) return;
-      // Flatten + boost verified sellers (boosted ads still rank highest)
+
+      // Fetch seller verification levels in one round-trip
+      const userIds = Array.from(new Set(((data as any[]) || []).map((r) => r.user_id).filter(Boolean)));
+      let levelMap: Record<string, number> = {};
+      if (userIds.length) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id,verification_level")
+          .in("id", userIds);
+        levelMap = Object.fromEntries((profs || []).map((p: any) => [p.id, p.verification_level ?? 0]));
+      }
+
+      // Boost verified sellers (boosted ads still rank highest)
       const enriched: Ad[] = ((data as any[]) || []).map((row) => ({
         ...row,
-        seller_level: row?.profiles?.verification_level ?? 0,
+        seller_level: row.user_id ? levelMap[row.user_id] ?? 0 : 0,
       }));
       enriched.sort((a, b) => {
         if (a.is_boosted !== b.is_boosted) return a.is_boosted ? -1 : 1;
