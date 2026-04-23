@@ -74,6 +74,7 @@ const VerificationPanel = () => {
       return;
     }
     setStep("sent");
+    setResendTimer(RESEND_COOLDOWN_SECONDS);
     setDevCode(data?.devCode ?? null);
     toast.success("Code sent");
   };
@@ -181,11 +182,11 @@ const VerificationPanel = () => {
               />
               <Button
                 onClick={sendCode}
-                disabled={sending || step === "sent"}
+                disabled={sending || step === "sent" || resendTimer > 0}
                 variant="gold"
               >
                 {sending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-                Send code
+                {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Send code"}
               </Button>
             </div>
 
@@ -226,12 +227,20 @@ const VerificationPanel = () => {
                         setStep("idle");
                         setCode("");
                         setDevCode(null);
+                        setResendTimer(0);
                       }}
                     >
                       Cancel
                     </Button>
                   </div>
                 </div>
+                {/* Resend option during cooldown */}
+                {resendTimer > 0 && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Timer className="h-3 w-3" />
+                    You can request a new code in {resendTimer} seconds
+                  </p>
+                )}
               </>
             )}
           </div>
