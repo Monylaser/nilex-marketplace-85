@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, MapPin, Eye, Loader2, Send, User as UserIcon, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
+import VerificationBadge from "@/components/VerificationBadge";
 
 const AdDetail = () => {
   const { id } = useParams();
@@ -34,7 +35,7 @@ const AdDetail = () => {
       if (data?.user_id) {
         const { data: p } = await supabase
           .from("profiles")
-          .select("id,name,avatar,phone,total_points")
+          .select("id,name,avatar,phone,total_points,verification_level")
           .eq("id", data.user_id)
           .maybeSingle();
         setSeller(p);
@@ -157,8 +158,11 @@ const AdDetail = () => {
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
                 {seller?.avatar ? <img src={seller.avatar} className="h-full w-full rounded-full object-cover" /> : <UserIcon className="h-6 w-6" />}
               </div>
-              <div>
-                <p className="font-medium">{seller?.name || "Nilex user"}</p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-medium truncate">{seller?.name || "Nilex user"}</p>
+                  <VerificationBadge level={seller?.verification_level} />
+                </div>
                 <p className="text-xs text-muted-foreground">{seller?.total_points || 0} points</p>
               </div>
             </div>
