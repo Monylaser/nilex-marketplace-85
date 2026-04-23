@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import {
   Loader2,
   Check,
   AlertCircle,
+  Timer,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +19,7 @@ import { toast } from "sonner";
 import VerificationBadge from "@/components/VerificationBadge";
 
 const EG_PHONE = /^\+20(10|11|12|15)\d{8}$/;
+const RESEND_COOLDOWN_SECONDS = 60;
 
 const VerificationPanel = () => {
   const { user } = useAuth();
@@ -29,7 +31,17 @@ const VerificationPanel = () => {
   const [devCode, setDevCode] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
   const emailConfirmed = !!user?.email_confirmed_at;
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const interval = setInterval(() => {
+      setResendTimer((t) => t - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [resendTimer]);
 
   useEffect(() => {
     if (!user) return;
@@ -62,6 +74,7 @@ const VerificationPanel = () => {
       return;
     }
     setStep("sent");
+    setResendTimer(RESEND_COOLDOWN_SECONDS);
     setDevCode(data?.devCode ?? null);
     toast.success("Code sent");
   };
@@ -169,11 +182,11 @@ const VerificationPanel = () => {
               />
               <Button
                 onClick={sendCode}
-                disabled={sending || step === "sent"}
+                disabled={sending || step === "sent" || resendTimer > 0}
                 variant="gold"
               >
                 {sending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-                Send code
+                {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Send code"}
               </Button>
             </div>
 
@@ -214,12 +227,20 @@ const VerificationPanel = () => {
                         setStep("idle");
                         setCode("");
                         setDevCode(null);
+                        setResendTimer(0);
                       }}
                     >
                       Cancel
                     </Button>
                   </div>
                 </div>
+                {/* Resend option during cooldown */}
+                {resendTimer > 0 && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Timer className="h-3 w-3" />
+                    You can request a new code in {resendTimer} seconds
+                  </p>
+                )}
               </>
             )}
           </div>
