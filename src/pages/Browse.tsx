@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { MapPin, Eye, Loader2, Sparkles, Wand2 } from "lucide-react";
 import { useAiSearchPref } from "@/hooks/useAiSearch";
+import VerificationBadge from "@/components/VerificationBadge";
 
 interface Ad {
   id: string;
@@ -23,6 +24,8 @@ interface Ad {
   images_json: any;
   created_at: string;
   similarity?: number;
+  user_id?: string;
+  seller_level?: number;
   categories?: { name: string; slug: string } | null;
 }
 
@@ -98,7 +101,7 @@ const Browse = () => {
       // Keyword (existing) path
       let query = supabase
         .from("ads")
-        .select("id,title,price,governorate,city,views,is_boosted,images_json,created_at,categories(name,slug)")
+        .select("id,title,price,governorate,city,views,is_boosted,images_json,created_at,user_id,categories(name,slug)")
         .eq("status", "active")
         .order("is_boosted", { ascending: false })
         .order("created_at", { ascending: false })
@@ -110,7 +113,30 @@ const Browse = () => {
 
       const { data } = await query;
       if (cancelled) return;
-      setAds((data as any) || []);
+
+      // Fetch seller verification levels in one round-trip
+      const userIds = Array.from(new Set(((data as any[]) || []).map((r) => r.user_id).filter(Boolean)));
+      let levelMap: Record<string, number> = {};
+      if (userIds.length) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id,verification_level")
+          .in("id", userIds);
+        levelMap = Object.fromEntries((profs || []).map((p: any) => [p.id, p.verification_level ?? 0]));
+      }
+
+      // Boost verified sellers (boosted ads still rank highest)
+      const enriched: Ad[] = ((data as any[]) || []).map((row) => ({
+        ...row,
+        seller_level: row.user_id ? levelMap[row.user_id] ?? 0 : 0,
+      }));
+      enriched.sort((a, b) => {
+        if (a.is_boosted !== b.is_boosted) return a.is_boosted ? -1 : 1;
+        const lvl = (b.seller_level ?? 0) - (a.seller_level ?? 0);
+        if (lvl !== 0) return lvl;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+      setAds(enriched);
       setSearchMode("keyword");
       setLoading(false);
     };
@@ -205,7 +231,10 @@ const Browse = () => {
                       )}
                     </div>
                     <div className="p-3 space-y-1">
-                      <h3 className="font-medium line-clamp-2 text-sm">{ad.title}</h3>
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-medium line-clamp-2 text-sm flex-1">{ad.title}</h3>
+                        {ad.seller_level ? <VerificationBadge level={ad.seller_level} /> : null}
+                      </div>
                       <p className="font-display text-lg font-bold text-gold">
                         {Number(ad.price).toLocaleString()} EGP
                       </p>
