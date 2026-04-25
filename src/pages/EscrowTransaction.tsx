@@ -69,9 +69,9 @@ const EscrowTransaction = () => {
     );
   }
 
-  const updateStatus = async (patch: Record<string, any>, successMsg: string) => {
+  const updateStatus = async (patch: any, successMsg: string) => {
     setActing(true);
-    const { error } = await supabase.from("escrow_transactions").update(patch).eq("id", tx.id);
+    const { error } = await (supabase.from("escrow_transactions") as any).update(patch).eq("id", tx.id);
     setActing(false);
     if (error) return toast.error(error.message);
     toast.success(successMsg);
