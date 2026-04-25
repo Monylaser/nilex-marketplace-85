@@ -40,6 +40,49 @@ const AdminEscrow = () => {
   const [resolution, setResolution] = useState("");
   const [acting, setActing] = useState(false);
 
+  // Filters (disputes tab)
+  const [fStatus, setFStatus] = useState<"all" | "pending" | "resolved">("all");
+  const [fSearch, setFSearch] = useState(""); // ad / buyer / seller id (substring)
+  const [fFrom, setFFrom] = useState<Date | undefined>();
+  const [fTo, setFTo] = useState<Date | undefined>();
+
+  const txById = useMemo(() => {
+    const m = new Map<string, any>();
+    transactions.forEach((t) => m.set(t.id, t));
+    return m;
+  }, [transactions]);
+
+  const filteredDisputes = useMemo(() => {
+    const q = fSearch.trim().toLowerCase();
+    return disputes.filter((d) => {
+      if (fStatus === "pending" && d.resolved_at) return false;
+      if (fStatus === "resolved" && !d.resolved_at) return false;
+
+      const created = new Date(d.created_at);
+      if (fFrom && created < fFrom) return false;
+      if (fTo) {
+        const end = new Date(fTo); end.setHours(23, 59, 59, 999);
+        if (created > end) return false;
+      }
+
+      if (q) {
+        const tx = txById.get(d.transaction_id);
+        const hay = [
+          d.transaction_id,
+          tx?.ad_id,
+          tx?.buyer_id,
+          tx?.seller_id,
+        ].filter(Boolean).join(" ").toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [disputes, txById, fStatus, fSearch, fFrom, fTo]);
+
+  const clearFilters = () => {
+    setFStatus("all"); setFSearch(""); setFFrom(undefined); setFTo(undefined);
+  };
+
   const load = async () => {
     setLoading(true);
     const [{ data: d }, { data: tx }] = await Promise.all([
@@ -130,41 +173,107 @@ const AdminEscrow = () => {
           <TabsTrigger value="transactions">All transactions</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="disputes" className="mt-4">
+        <TabsContent value="disputes" className="mt-4 space-y-4">
+          {/* Filter bar */}
+          <Card className="p-3 flex flex-wrap gap-2 items-center">
+            <Select value={fStatus} onValueChange={(v: any) => setFStatus(v)}>
+              <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="resolved">Resolved</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Input
+              value={fSearch}
+              onChange={(e) => setFSearch(e.target.value)}
+              placeholder="Search by ad / buyer / seller ID…"
+              className="flex-1 min-w-[220px]"
+            />
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("w-[150px] justify-start text-left font-normal", !fFrom && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {fFrom ? format(fFrom, "PP") : "From"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={fFrom} onSelect={setFFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("w-[150px] justify-start text-left font-normal", !fTo && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {fTo ? format(fTo, "PP") : "To"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={fTo} onSelect={setFTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+              </PopoverContent>
+            </Popover>
+
+            {(fStatus !== "all" || fSearch || fFrom || fTo) && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
+                <X className="h-4 w-4" /> Clear
+              </Button>
+            )}
+            <span className="text-xs text-muted-foreground ml-auto">
+              {filteredDisputes.length} of {disputes.length}
+            </span>
+          </Card>
+
           <Card className="p-0 overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Opened</TableHead>
                   <TableHead>Reason</TableHead>
+                  <TableHead>Parties</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {disputes.length === 0 && (
-                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">No disputes yet.</TableCell></TableRow>
+                {filteredDisputes.length === 0 && (
+                  <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                    {disputes.length === 0 ? "No disputes yet." : "No disputes match these filters."}
+                  </TableCell></TableRow>
                 )}
-                {disputes.map((d) => (
-                  <TableRow key={d.id}>
-                    <TableCell className="text-sm">{new Date(d.created_at).toLocaleString()}</TableCell>
-                    <TableCell className="max-w-md truncate">{d.reason}</TableCell>
-                    <TableCell>
-                      {d.resolved_at ? (
-                        <Badge variant="secondary">Resolved</Badge>
-                      ) : (
-                        <Badge variant="destructive" className="gap-1">
-                          <AlertTriangle className="h-3 w-3" /> Pending
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button size="sm" variant="outline" onClick={() => openDetail(d)} className="gap-1">
-                        <Eye className="h-4 w-4" /> Review
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {filteredDisputes.map((d) => {
+                  const tx = txById.get(d.transaction_id);
+                  return (
+                    <TableRow key={d.id}>
+                      <TableCell className="text-sm">{new Date(d.created_at).toLocaleString()}</TableCell>
+                      <TableCell className="max-w-xs truncate">{d.reason}</TableCell>
+                      <TableCell className="text-xs font-mono text-muted-foreground">
+                        {tx ? (
+                          <div className="space-y-0.5">
+                            <div>Ad: {String(tx.ad_id).slice(0, 8)}…</div>
+                            <div>B: {String(tx.buyer_id).slice(0, 8)}… · S: {String(tx.seller_id).slice(0, 8)}…</div>
+                          </div>
+                        ) : "—"}
+                      </TableCell>
+                      <TableCell>
+                        {d.resolved_at ? (
+                          <Badge variant="secondary">Resolved</Badge>
+                        ) : (
+                          <Badge variant="destructive" className="gap-1">
+                            <AlertTriangle className="h-3 w-3" /> Pending
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button size="sm" variant="outline" onClick={() => openDetail(d)} className="gap-1">
+                          <Eye className="h-4 w-4" /> Review
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </Card>
