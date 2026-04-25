@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Heart, MapPin, Eye, Loader2, Send, User as UserIcon, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import VerificationBadge from "@/components/VerificationBadge";
+import EscrowButton from "@/components/EscrowButton";
+import { isEscrowEligible } from "@/lib/escrow";
 
 const AdDetail = () => {
   const { id } = useParams();
@@ -176,6 +178,15 @@ const AdDetail = () => {
               </Button>
             )}
           </Card>
+
+          {isEscrowEligible(ad.categories?.slug) && (
+            <Card className="p-5 border-gold/40">
+              <EscrowButton
+                ad={{ id: ad.id, title: ad.title, price: Number(ad.price), user_id: ad.user_id }}
+                sellerVerificationLevel={seller?.verification_level}
+              />
+            </Card>
+          )}
 
           <Card className="p-5">
             <h3 className="font-display font-semibold">Message seller</h3>
