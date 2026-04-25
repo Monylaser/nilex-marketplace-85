@@ -1,16 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShieldCheck, Loader2, Eye, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import { ShieldCheck, Loader2, Eye, CheckCircle2, XCircle, AlertTriangle, CalendarIcon, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { STATUS_LABELS } from "@/lib/escrow";
 import { useAuth } from "@/hooks/useAuth";
