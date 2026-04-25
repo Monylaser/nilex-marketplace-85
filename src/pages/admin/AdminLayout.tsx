@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { Shield, LayoutDashboard, Megaphone, Users, Tag, Image, Zap, Search } from "lucide-react";
+import { Shield, LayoutDashboard, Megaphone, Users, Tag, Image, Zap, Search, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
 const items = [
@@ -10,6 +10,7 @@ const items = [
   { to: "/admin/banners", label: "Banners", icon: Image },
   { to: "/admin/boost-packages", label: "Boost Packages", icon: Zap },
   { to: "/admin/search", label: "Search", icon: Search },
+  { to: "/admin/escrow", label: "Escrow", icon: ShieldCheck },
 ];
 
 const AdminLayout = () => (
