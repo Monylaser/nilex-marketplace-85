@@ -368,6 +368,145 @@ export type Database = {
         }
         Relationships: []
       }
+      escrow_disputes: {
+        Row: {
+          created_at: string
+          evidence_json: Json
+          id: string
+          opened_by: string
+          reason: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          transaction_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          evidence_json?: Json
+          id?: string
+          opened_by: string
+          reason: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          transaction_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          evidence_json?: Json
+          id?: string
+          opened_by?: string
+          reason?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          transaction_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escrow_disputes_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "escrow_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escrow_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          transaction_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          transaction_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          transaction_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escrow_messages_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "escrow_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escrow_transactions: {
+        Row: {
+          ad_id: string
+          amount: number
+          buyer_id: string
+          cancelled_at: string | null
+          commission: number
+          commission_rate: number
+          completed_at: string | null
+          created_at: string
+          id: string
+          paid_at: string | null
+          payment_intent_id: string | null
+          payment_method: string | null
+          refunded_at: string | null
+          seller_id: string
+          shipped_at: string | null
+          status: Database["public"]["Enums"]["escrow_status"]
+          updated_at: string
+        }
+        Insert: {
+          ad_id: string
+          amount: number
+          buyer_id: string
+          cancelled_at?: string | null
+          commission?: number
+          commission_rate?: number
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payment_intent_id?: string | null
+          payment_method?: string | null
+          refunded_at?: string | null
+          seller_id: string
+          shipped_at?: string | null
+          status?: Database["public"]["Enums"]["escrow_status"]
+          updated_at?: string
+        }
+        Update: {
+          ad_id?: string
+          amount?: number
+          buyer_id?: string
+          cancelled_at?: string | null
+          commission?: number
+          commission_rate?: number
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payment_intent_id?: string | null
+          payment_method?: string | null
+          refunded_at?: string | null
+          seller_id?: string
+          shipped_at?: string | null
+          status?: Database["public"]["Enums"]["escrow_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           ad_id: string
@@ -942,6 +1081,14 @@ export type Database = {
         | "rejected"
       app_role: "admin" | "moderator" | "user"
       boost_status: "pending" | "active" | "expired" | "cancelled"
+      escrow_status:
+        | "pending"
+        | "paid"
+        | "shipped"
+        | "completed"
+        | "cancelled"
+        | "disputed"
+        | "refunded"
       message_status: "sent" | "delivered" | "read"
     }
     CompositeTypes: {
@@ -1074,6 +1221,15 @@ export const Constants = {
       ad_status: ["draft", "pending", "active", "sold", "expired", "rejected"],
       app_role: ["admin", "moderator", "user"],
       boost_status: ["pending", "active", "expired", "cancelled"],
+      escrow_status: [
+        "pending",
+        "paid",
+        "shipped",
+        "completed",
+        "cancelled",
+        "disputed",
+        "refunded",
+      ],
       message_status: ["sent", "delivered", "read"],
     },
   },
