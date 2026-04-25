@@ -1,0 +1,283 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+} from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ShieldCheck, Loader2, Eye, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
+import { STATUS_LABELS } from "@/lib/escrow";
+import { useAuth } from "@/hooks/useAuth";
+
+type Dispute = any;
+type Tx = any;
+
+const AdminEscrow = () => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [disputes, setDisputes] = useState<Dispute[]>([]);
+  const [transactions, setTransactions] = useState<Tx[]>([]);
+  const [stats, setStats] = useState({ volume: 0, revenue: 0, count: 0, pendingDisputes: 0 });
+
+  // Detail dialog state
+  const [selected, setSelected] = useState<Dispute | null>(null);
+  const [selectedTx, setSelectedTx] = useState<Tx | null>(null);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [resolution, setResolution] = useState("");
+  const [acting, setActing] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    const [{ data: d }, { data: tx }] = await Promise.all([
+      supabase.from("escrow_disputes").select("*").order("created_at", { ascending: false }),
+      supabase.from("escrow_transactions").select("*").order("created_at", { ascending: false }).limit(200),
+    ]);
+    setDisputes(d || []);
+    setTransactions(tx || []);
+
+    const completed = (tx || []).filter((t: any) => t.status === "completed");
+    const volume = completed.reduce((s: number, t: any) => s + Number(t.amount || 0), 0);
+    const revenue = completed.reduce((s: number, t: any) => s + Number(t.commission || 0), 0);
+    const pendingDisputes = (d || []).filter((x: any) => !x.resolved_at).length;
+    setStats({ volume, revenue, count: completed.length, pendingDisputes });
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const openDetail = async (dispute: Dispute) => {
+    setSelected(dispute);
+    setResolution("");
+    const [{ data: t }, { data: m }] = await Promise.all([
+      supabase.from("escrow_transactions").select("*").eq("id", dispute.transaction_id).maybeSingle(),
+      supabase.from("escrow_messages").select("*").eq("transaction_id", dispute.transaction_id).order("created_at"),
+    ]);
+    setSelectedTx(t);
+    setMessages(m || []);
+  };
+
+  const resolve = async (action: "refund" | "release") => {
+    if (!selected || !selectedTx || !user) return;
+    if (!resolution.trim()) return toast.error("Please add a resolution note");
+    setActing(true);
+
+    const txPatch =
+      action === "refund"
+        ? { status: "refunded", refunded_at: new Date().toISOString() }
+        : { status: "completed", completed_at: new Date().toISOString() };
+
+    const { error: e1 } = await (supabase.from("escrow_transactions") as any)
+      .update(txPatch).eq("id", selectedTx.id);
+    if (e1) { setActing(false); return toast.error(e1.message); }
+
+    const { error: e2 } = await (supabase.from("escrow_disputes") as any).update({
+      resolution: `${action.toUpperCase()}: ${resolution.trim()}`,
+      resolved_by: user.id,
+      resolved_at: new Date().toISOString(),
+    }).eq("id", selected.id);
+
+    setActing(false);
+    if (e2) return toast.error(e2.message);
+
+    toast.success(action === "refund" ? "Buyer refunded" : "Funds released to seller");
+    setSelected(null);
+    setSelectedTx(null);
+    load();
+  };
+
+  if (loading) {
+    return <div className="flex justify-center py-32"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="font-display text-2xl font-bold flex items-center gap-2">
+          <ShieldCheck className="h-6 w-6 text-gold" /> Escrow Management
+        </h1>
+        <p className="text-sm text-muted-foreground">Review disputes, monitor transactions, resolve cases.</p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Total volume" value={`${stats.volume.toLocaleString()} EGP`} />
+        <StatCard label="Commission revenue" value={`${stats.revenue.toLocaleString()} EGP`} />
+        <StatCard label="Completed transactions" value={String(stats.count)} />
+        <StatCard label="Pending disputes" value={String(stats.pendingDisputes)} highlight={stats.pendingDisputes > 0} />
+      </div>
+
+      <Tabs defaultValue="disputes">
+        <TabsList>
+          <TabsTrigger value="disputes">
+            Disputes {stats.pendingDisputes > 0 && (
+              <Badge variant="destructive" className="ml-2">{stats.pendingDisputes}</Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="transactions">All transactions</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="disputes" className="mt-4">
+          <Card className="p-0 overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Opened</TableHead>
+                  <TableHead>Reason</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {disputes.length === 0 && (
+                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">No disputes yet.</TableCell></TableRow>
+                )}
+                {disputes.map((d) => (
+                  <TableRow key={d.id}>
+                    <TableCell className="text-sm">{new Date(d.created_at).toLocaleString()}</TableCell>
+                    <TableCell className="max-w-md truncate">{d.reason}</TableCell>
+                    <TableCell>
+                      {d.resolved_at ? (
+                        <Badge variant="secondary">Resolved</Badge>
+                      ) : (
+                        <Badge variant="destructive" className="gap-1">
+                          <AlertTriangle className="h-3 w-3" /> Pending
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button size="sm" variant="outline" onClick={() => openDetail(d)} className="gap-1">
+                        <Eye className="h-4 w-4" /> Review
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="transactions" className="mt-4">
+          <Card className="p-0 overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Commission</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Open</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {transactions.length === 0 && (
+                  <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No transactions yet.</TableCell></TableRow>
+                )}
+                {transactions.map((t) => (
+                  <TableRow key={t.id}>
+                    <TableCell className="text-sm">{new Date(t.created_at).toLocaleString()}</TableCell>
+                    <TableCell className="font-medium">{Number(t.amount).toLocaleString()} EGP</TableCell>
+                    <TableCell>{Number(t.commission).toLocaleString()} EGP</TableCell>
+                    <TableCell><Badge variant="secondary">{STATUS_LABELS[t.status] || t.status}</Badge></TableCell>
+                    <TableCell className="text-right">
+                      <Link to={`/escrow/${t.id}`}>
+                        <Button size="sm" variant="outline" className="gap-1"><Eye className="h-4 w-4" /> View</Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Dispute detail dialog */}
+      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" /> Dispute review
+            </DialogTitle>
+          </DialogHeader>
+
+          {selected && selectedTx && (
+            <div className="space-y-4">
+              <Card className="p-4">
+                <p className="text-sm text-muted-foreground mb-1">Transaction</p>
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-xs">{selectedTx.id}</span>
+                  <span className="font-bold text-gold">{Number(selectedTx.amount).toLocaleString()} EGP</span>
+                </div>
+                <div className="mt-2 text-sm">
+                  Status: <Badge variant="secondary">{STATUS_LABELS[selectedTx.status] || selectedTx.status}</Badge>
+                </div>
+              </Card>
+
+              <div>
+                <p className="text-sm font-medium mb-1">Reason from {selected.opened_by === selectedTx.buyer_id ? "buyer" : "seller"}</p>
+                <Card className="p-3 text-sm whitespace-pre-wrap">{selected.reason}</Card>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium mb-2">Conversation ({messages.length})</p>
+                <div className="space-y-2 max-h-60 overflow-y-auto rounded-md border p-3">
+                  {messages.length === 0 && <p className="text-sm text-muted-foreground">No messages exchanged.</p>}
+                  {messages.map((m) => (
+                    <div key={m.id} className="text-sm">
+                      <p className="text-xs text-muted-foreground">
+                        {m.user_id === selectedTx.buyer_id ? "Buyer" : "Seller"} · {new Date(m.created_at).toLocaleString()}
+                      </p>
+                      <p className="whitespace-pre-wrap">{m.message}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {selected.resolved_at ? (
+                <Card className="p-3 bg-secondary/40 text-sm">
+                  <p className="font-medium mb-1">Already resolved</p>
+                  <p className="text-muted-foreground">{selected.resolution}</p>
+                  <p className="text-xs text-muted-foreground mt-1">at {new Date(selected.resolved_at).toLocaleString()}</p>
+                </Card>
+              ) : (
+                <>
+                  <div>
+                    <p className="text-sm font-medium mb-1">Resolution note</p>
+                    <Textarea value={resolution} onChange={(e) => setResolution(e.target.value)} rows={3}
+                      placeholder="Explain your decision (visible to both parties)…" />
+                  </div>
+
+                  <DialogFooter className="gap-2 sm:gap-2">
+                    <Button variant="outline" onClick={() => resolve("refund")} disabled={acting} className="gap-2">
+                      {acting ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+                      Refund buyer
+                    </Button>
+                    <Button variant="gold" onClick={() => resolve("release")} disabled={acting} className="gap-2">
+                      {acting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                      Release to seller
+                    </Button>
+                  </DialogFooter>
+                </>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+const StatCard = ({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) => (
+  <Card className={`p-4 ${highlight ? "border-destructive" : ""}`}>
+    <p className="text-sm text-muted-foreground">{label}</p>
+    <p className={`text-2xl font-bold mt-1 ${highlight ? "text-destructive" : ""}`}>{value}</p>
+  </Card>
+);
+
+export default AdminEscrow;
