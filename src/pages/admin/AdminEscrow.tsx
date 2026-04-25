@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShieldCheck, Loader2, Eye, CheckCircle2, XCircle, AlertTriangle, CalendarIcon, X } from "lucide-react";
+import { ShieldCheck, Loader2, Eye, CheckCircle2, XCircle, AlertTriangle, CalendarIcon, X, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { STATUS_LABELS } from "@/lib/escrow";
@@ -81,6 +81,50 @@ const AdminEscrow = () => {
 
   const clearFilters = () => {
     setFStatus("all"); setFSearch(""); setFFrom(undefined); setFTo(undefined);
+  };
+
+  const exportCsv = () => {
+    if (filteredDisputes.length === 0) {
+      toast.error("No disputes to export");
+      return;
+    }
+    const esc = (v: any) => {
+      const s = v === null || v === undefined ? "" : String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const headers = [
+      "dispute_id", "opened_at", "status", "reason", "resolution",
+      "resolved_at", "resolved_by", "transaction_id", "ad_id",
+      "buyer_id", "seller_id", "amount", "commission", "tx_status",
+    ];
+    const rows = filteredDisputes.map((d) => {
+      const tx = txById.get(d.transaction_id) || {};
+      return [
+        d.id,
+        d.created_at,
+        d.resolved_at ? "resolved" : "pending",
+        d.reason,
+        d.resolution || "",
+        d.resolved_at || "",
+        d.resolved_by || "",
+        d.transaction_id,
+        tx.ad_id || "",
+        tx.buyer_id || "",
+        tx.seller_id || "",
+        tx.amount ?? "",
+        tx.commission ?? "",
+        tx.status || "",
+      ].map(esc).join(",");
+    });
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `escrow-disputes-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    toast.success(`Exported ${filteredDisputes.length} disputes`);
   };
 
   const load = async () => {
@@ -221,7 +265,10 @@ const AdminEscrow = () => {
                 <X className="h-4 w-4" /> Clear
               </Button>
             )}
-            <span className="text-xs text-muted-foreground ml-auto">
+            <Button variant="outline" size="sm" onClick={exportCsv} className="gap-1 ml-auto">
+              <Download className="h-4 w-4" /> Export CSV
+            </Button>
+            <span className="text-xs text-muted-foreground">
               {filteredDisputes.length} of {disputes.length}
             </span>
           </Card>
