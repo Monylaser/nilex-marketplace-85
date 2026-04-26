@@ -85,6 +85,7 @@ const AdDetail = () => {
     });
     setSending(false);
     if (error) return toast.error(error.message);
+    trackInquiry(ad.id);
     toast.success("Message sent!");
     setMsg("");
   };
