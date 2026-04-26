@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SellerInsightsPanel from "@/components/SellerInsightsPanel";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -249,6 +250,9 @@ const SellerAnalytics = () => {
               <Kpi icon={<MessageSquare className="h-4 w-4" />} label="Avg inquiries / ad"
                    value={adRows.length ? (totals.inquiries / adRows.length).toFixed(1) : "0"} />
             </div>
+
+            {/* AI insights */}
+            <SellerInsightsPanel days={days} />
 
             {/* Trend: views vs previous period */}
             <Card className="p-4">
