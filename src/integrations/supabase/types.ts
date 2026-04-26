@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_stats: {
+        Row: {
+          ad_id: string
+          created_at: string
+          date: string
+          favorites: number
+          id: string
+          inquiries: number
+          unique_views: number
+          updated_at: string
+          views: number
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string
+          date: string
+          favorites?: number
+          id?: string
+          inquiries?: number
+          unique_views?: number
+          updated_at?: string
+          views?: number
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string
+          date?: string
+          favorites?: number
+          id?: string
+          inquiries?: number
+          unique_views?: number
+          updated_at?: string
+          views?: number
+        }
+        Relationships: []
+      }
+      ad_views: {
+        Row: {
+          ad_id: string
+          created_at: string
+          device: string | null
+          governorate: string | null
+          id: string
+          user_agent: string | null
+          viewer_id: string | null
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string
+          device?: string | null
+          governorate?: string | null
+          id?: string
+          user_agent?: string | null
+          viewer_id?: string | null
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string
+          device?: string | null
+          governorate?: string | null
+          id?: string
+          user_agent?: string | null
+          viewer_id?: string | null
+        }
+        Relationships: []
+      }
       ads: {
         Row: {
           boost_package_id: number | null
@@ -1048,6 +1114,16 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_ad_stats: {
+        Args: {
+          _ad_id: string
+          _favorites?: number
+          _inquiries?: number
+          _unique_views?: number
+          _views?: number
+        }
+        Returns: undefined
       }
       search_ads: {
         Args: {

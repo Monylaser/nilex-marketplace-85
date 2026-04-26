@@ -23,6 +23,7 @@ import AdminBanners from "./pages/admin/AdminBanners";
 import AdminBoostPackages from "./pages/admin/AdminBoostPackages";
 import AdminSearch from "./pages/admin/AdminSearch";
 import AdminEscrow from "./pages/admin/AdminEscrow";
+import SellerAnalytics from "./pages/SellerAnalytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
             <Route path="/chat/:userId" element={<ProtectedRoute><ChatThread /></ProtectedRoute>} />
             <Route path="/escrow/:id" element={<ProtectedRoute><EscrowTransaction /></ProtectedRoute>} />
+            <Route path="/seller/analytics" element={<ProtectedRoute><SellerAnalytics /></ProtectedRoute>} />
             <Route
               path="/admin"
               element={

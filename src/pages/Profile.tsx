@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import NotificationSettings from "@/components/NotificationSettings";
 import VerificationPanel from "@/components/VerificationPanel";
@@ -97,6 +97,20 @@ const Profile = () => {
           </TabsList>
 
           <TabsContent value="ads" className="mt-6 space-y-3">
+            <Link to="/seller/analytics">
+              <Card className="p-4 flex items-center justify-between hover:border-primary transition cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-gold/10 flex items-center justify-center">
+                    <BarChart3 className="h-5 w-5 text-gold" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Seller analytics</p>
+                    <p className="text-sm text-muted-foreground">Views, inquiries, favorites & top ads</p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm">Open</Button>
+              </Card>
+            </Link>
             {myAds.length === 0 && <p className="text-muted-foreground">You haven't posted any ads yet.</p>}
             {myAds.map((ad) => (
               <Card key={ad.id} className="flex items-center justify-between p-4">

@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import VerificationBadge from "@/components/VerificationBadge";
 import EscrowButton from "@/components/EscrowButton";
 import { isEscrowEligible } from "@/lib/escrow";
+import { trackAdView, trackInquiry, trackFavorite } from "@/lib/analytics";
 
 const AdDetail = () => {
   const { id } = useParams();
@@ -43,7 +44,11 @@ const AdDetail = () => {
         setSeller(p);
       }
       // increment views (best-effort)
-      if (data) await supabase.from("ads").update({ views: (data.views || 0) + 1 }).eq("id", id);
+      if (data) {
+        await supabase.from("ads").update({ views: (data.views || 0) + 1 }).eq("id", id);
+        // Per-day analytics tracking (deduped, owner-skipped)
+        trackAdView(data.id, data.user_id);
+      }
       setLoading(false);
     })();
   }, [id]);
@@ -59,9 +64,11 @@ const AdDetail = () => {
     if (fav) {
       await supabase.from("favorites").delete().eq("user_id", user.id).eq("ad_id", id!);
       setFav(false);
+      trackFavorite(id!, -1);
     } else {
       await supabase.from("favorites").insert({ user_id: user.id, ad_id: id! });
       setFav(true);
+      trackFavorite(id!, 1);
       toast.success("Saved to favorites");
     }
   };
@@ -78,6 +85,7 @@ const AdDetail = () => {
     });
     setSending(false);
     if (error) return toast.error(error.message);
+    trackInquiry(ad.id);
     toast.success("Message sent!");
     setMsg("");
   };
