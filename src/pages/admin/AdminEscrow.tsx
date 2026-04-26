@@ -15,9 +15,13 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuLabel,
+  DropdownMenuSeparator, DropdownMenuCheckboxItem,
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShieldCheck, Loader2, Eye, CheckCircle2, XCircle, AlertTriangle, CalendarIcon, X, Download } from "lucide-react";
+import { ShieldCheck, Loader2, Eye, CheckCircle2, XCircle, AlertTriangle, CalendarIcon, X, Download, Columns3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { STATUS_LABELS } from "@/lib/escrow";
@@ -45,6 +49,33 @@ const AdminEscrow = () => {
   const [fSearch, setFSearch] = useState(""); // ad / buyer / seller id (substring)
   const [fFrom, setFFrom] = useState<Date | undefined>();
   const [fTo, setFTo] = useState<Date | undefined>();
+
+  // CSV column picker
+  const ALL_COLUMNS: { key: string; label: string; get: (d: any, tx: any) => any }[] = [
+    { key: "dispute_id", label: "Dispute ID", get: (d) => d.id },
+    { key: "opened_at", label: "Opened at", get: (d) => d.created_at },
+    { key: "status", label: "Status", get: (d) => (d.resolved_at ? "resolved" : "pending") },
+    { key: "reason", label: "Reason", get: (d) => d.reason },
+    { key: "resolution", label: "Resolution", get: (d) => d.resolution || "" },
+    { key: "resolved_at", label: "Resolved at", get: (d) => d.resolved_at || "" },
+    { key: "resolved_by", label: "Resolved by", get: (d) => d.resolved_by || "" },
+    { key: "opened_by", label: "Opened by", get: (d) => d.opened_by || "" },
+    { key: "transaction_id", label: "Transaction ID", get: (d) => d.transaction_id },
+    { key: "ad_id", label: "Ad ID", get: (_d, tx) => tx?.ad_id || "" },
+    { key: "buyer_id", label: "Buyer ID", get: (_d, tx) => tx?.buyer_id || "" },
+    { key: "seller_id", label: "Seller ID", get: (_d, tx) => tx?.seller_id || "" },
+    { key: "amount", label: "Amount", get: (_d, tx) => tx?.amount ?? "" },
+    { key: "commission", label: "Commission", get: (_d, tx) => tx?.commission ?? "" },
+    { key: "tx_status", label: "Tx status", get: (_d, tx) => tx?.status || "" },
+  ];
+  const [exportCols, setExportCols] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(ALL_COLUMNS.map((c) => [c.key, true]))
+  );
+  const toggleCol = (key: string) =>
+    setExportCols((p) => ({ ...p, [key]: !p[key] }));
+  const setAllCols = (val: boolean) =>
+    setExportCols(Object.fromEntries(ALL_COLUMNS.map((c) => [c.key, val])));
+  const selectedColCount = Object.values(exportCols).filter(Boolean).length;
 
   const txById = useMemo(() => {
     const m = new Map<string, any>();
@@ -88,33 +119,19 @@ const AdminEscrow = () => {
       toast.error("No disputes to export");
       return;
     }
+    const cols = ALL_COLUMNS.filter((c) => exportCols[c.key]);
+    if (cols.length === 0) {
+      toast.error("Select at least one column");
+      return;
+    }
     const esc = (v: any) => {
       const s = v === null || v === undefined ? "" : String(v);
       return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
     };
-    const headers = [
-      "dispute_id", "opened_at", "status", "reason", "resolution",
-      "resolved_at", "resolved_by", "transaction_id", "ad_id",
-      "buyer_id", "seller_id", "amount", "commission", "tx_status",
-    ];
+    const headers = cols.map((c) => c.key);
     const rows = filteredDisputes.map((d) => {
       const tx = txById.get(d.transaction_id) || {};
-      return [
-        d.id,
-        d.created_at,
-        d.resolved_at ? "resolved" : "pending",
-        d.reason,
-        d.resolution || "",
-        d.resolved_at || "",
-        d.resolved_by || "",
-        d.transaction_id,
-        tx.ad_id || "",
-        tx.buyer_id || "",
-        tx.seller_id || "",
-        tx.amount ?? "",
-        tx.commission ?? "",
-        tx.status || "",
-      ].map(esc).join(",");
+      return cols.map((c) => esc(c.get(d, tx))).join(",");
     });
     const csv = [headers.join(","), ...rows].join("\n");
     const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
@@ -124,7 +141,7 @@ const AdminEscrow = () => {
     a.download = `escrow-disputes-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a); a.click();
     document.body.removeChild(a); URL.revokeObjectURL(url);
-    toast.success(`Exported ${filteredDisputes.length} disputes`);
+    toast.success(`Exported ${filteredDisputes.length} disputes (${cols.length} cols)`);
   };
 
   const load = async () => {
@@ -265,7 +282,43 @@ const AdminEscrow = () => {
                 <X className="h-4 w-4" /> Clear
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={exportCsv} className="gap-1 ml-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1 ml-auto">
+                  <Columns3 className="h-4 w-4" /> Columns ({selectedColCount})
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 max-h-80 overflow-y-auto bg-popover">
+                <DropdownMenuLabel className="flex items-center justify-between">
+                  <span>CSV columns</span>
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setAllCols(true)}
+                      className="text-xs text-primary hover:underline"
+                    >All</button>
+                    <span className="text-xs text-muted-foreground">/</span>
+                    <button
+                      type="button"
+                      onClick={() => setAllCols(false)}
+                      className="text-xs text-primary hover:underline"
+                    >None</button>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {ALL_COLUMNS.map((c) => (
+                  <DropdownMenuCheckboxItem
+                    key={c.key}
+                    checked={!!exportCols[c.key]}
+                    onCheckedChange={() => toggleCol(c.key)}
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    {c.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" size="sm" onClick={exportCsv} className="gap-1">
               <Download className="h-4 w-4" /> Export CSV
             </Button>
             <span className="text-xs text-muted-foreground">
