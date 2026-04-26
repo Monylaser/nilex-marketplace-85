@@ -50,6 +50,33 @@ const AdminEscrow = () => {
   const [fFrom, setFFrom] = useState<Date | undefined>();
   const [fTo, setFTo] = useState<Date | undefined>();
 
+  // CSV column picker
+  const ALL_COLUMNS: { key: string; label: string; get: (d: any, tx: any) => any }[] = [
+    { key: "dispute_id", label: "Dispute ID", get: (d) => d.id },
+    { key: "opened_at", label: "Opened at", get: (d) => d.created_at },
+    { key: "status", label: "Status", get: (d) => (d.resolved_at ? "resolved" : "pending") },
+    { key: "reason", label: "Reason", get: (d) => d.reason },
+    { key: "resolution", label: "Resolution", get: (d) => d.resolution || "" },
+    { key: "resolved_at", label: "Resolved at", get: (d) => d.resolved_at || "" },
+    { key: "resolved_by", label: "Resolved by", get: (d) => d.resolved_by || "" },
+    { key: "opened_by", label: "Opened by", get: (d) => d.opened_by || "" },
+    { key: "transaction_id", label: "Transaction ID", get: (d) => d.transaction_id },
+    { key: "ad_id", label: "Ad ID", get: (_d, tx) => tx?.ad_id || "" },
+    { key: "buyer_id", label: "Buyer ID", get: (_d, tx) => tx?.buyer_id || "" },
+    { key: "seller_id", label: "Seller ID", get: (_d, tx) => tx?.seller_id || "" },
+    { key: "amount", label: "Amount", get: (_d, tx) => tx?.amount ?? "" },
+    { key: "commission", label: "Commission", get: (_d, tx) => tx?.commission ?? "" },
+    { key: "tx_status", label: "Tx status", get: (_d, tx) => tx?.status || "" },
+  ];
+  const [exportCols, setExportCols] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(ALL_COLUMNS.map((c) => [c.key, true]))
+  );
+  const toggleCol = (key: string) =>
+    setExportCols((p) => ({ ...p, [key]: !p[key] }));
+  const setAllCols = (val: boolean) =>
+    setExportCols(Object.fromEntries(ALL_COLUMNS.map((c) => [c.key, val])));
+  const selectedColCount = Object.values(exportCols).filter(Boolean).length;
+
   const txById = useMemo(() => {
     const m = new Map<string, any>();
     transactions.forEach((t) => m.set(t.id, t));
