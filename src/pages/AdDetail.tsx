@@ -64,9 +64,11 @@ const AdDetail = () => {
     if (fav) {
       await supabase.from("favorites").delete().eq("user_id", user.id).eq("ad_id", id!);
       setFav(false);
+      trackFavorite(id!, -1);
     } else {
       await supabase.from("favorites").insert({ user_id: user.id, ad_id: id! });
       setFav(true);
+      trackFavorite(id!, 1);
       toast.success("Saved to favorites");
     }
   };
