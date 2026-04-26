@@ -282,7 +282,43 @@ const AdminEscrow = () => {
                 <X className="h-4 w-4" /> Clear
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={exportCsv} className="gap-1 ml-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1 ml-auto">
+                  <Columns3 className="h-4 w-4" /> Columns ({selectedColCount})
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 max-h-80 overflow-y-auto bg-popover">
+                <DropdownMenuLabel className="flex items-center justify-between">
+                  <span>CSV columns</span>
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setAllCols(true)}
+                      className="text-xs text-primary hover:underline"
+                    >All</button>
+                    <span className="text-xs text-muted-foreground">/</span>
+                    <button
+                      type="button"
+                      onClick={() => setAllCols(false)}
+                      className="text-xs text-primary hover:underline"
+                    >None</button>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {ALL_COLUMNS.map((c) => (
+                  <DropdownMenuCheckboxItem
+                    key={c.key}
+                    checked={!!exportCols[c.key]}
+                    onCheckedChange={() => toggleCol(c.key)}
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    {c.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" size="sm" onClick={exportCsv} className="gap-1">
               <Download className="h-4 w-4" /> Export CSV
             </Button>
             <span className="text-xs text-muted-foreground">
