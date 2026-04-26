@@ -44,7 +44,11 @@ const AdDetail = () => {
         setSeller(p);
       }
       // increment views (best-effort)
-      if (data) await supabase.from("ads").update({ views: (data.views || 0) + 1 }).eq("id", id);
+      if (data) {
+        await supabase.from("ads").update({ views: (data.views || 0) + 1 }).eq("id", id);
+        // Per-day analytics tracking (deduped, owner-skipped)
+        trackAdView(data.id, data.user_id);
+      }
       setLoading(false);
     })();
   }, [id]);
