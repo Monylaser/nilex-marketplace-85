@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import VerificationBadge from "@/components/VerificationBadge";
 import EscrowButton from "@/components/EscrowButton";
 import { isEscrowEligible } from "@/lib/escrow";
+import { trackAdView, trackInquiry, trackFavorite } from "@/lib/analytics";
 
 const AdDetail = () => {
   const { id } = useParams();
