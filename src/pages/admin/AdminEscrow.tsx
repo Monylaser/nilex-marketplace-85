@@ -15,9 +15,13 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuLabel,
+  DropdownMenuSeparator, DropdownMenuCheckboxItem,
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShieldCheck, Loader2, Eye, CheckCircle2, XCircle, AlertTriangle, CalendarIcon, X, Download } from "lucide-react";
+import { ShieldCheck, Loader2, Eye, CheckCircle2, XCircle, AlertTriangle, CalendarIcon, X, Download, Columns3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { STATUS_LABELS } from "@/lib/escrow";
