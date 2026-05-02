@@ -49,6 +49,7 @@ const App = () => (
             <Route path="/chat/:userId" element={<ProtectedRoute><ChatThread /></ProtectedRoute>} />
             <Route path="/escrow/:id" element={<ProtectedRoute><EscrowTransaction /></ProtectedRoute>} />
             <Route path="/seller/analytics" element={<ProtectedRoute><SellerAnalytics /></ProtectedRoute>} />
+            <Route path="/settings/appearance" element={<AppearanceSettings />} />
             <Route
               path="/admin"
               element={
@@ -68,6 +69,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </AppearanceProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
