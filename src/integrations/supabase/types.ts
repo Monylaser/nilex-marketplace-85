@@ -987,6 +987,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_appearance_settings: {
+        Row: {
+          created_at: string
+          dark_mode: string
+          density: string
+          font_size: string
+          high_contrast: boolean
+          language: string
+          layout_style: string
+          reduced_motion: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dark_mode?: string
+          density?: string
+          font_size?: string
+          high_contrast?: boolean
+          language?: string
+          layout_style?: string
+          reduced_motion?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dark_mode?: string
+          density?: string
+          font_size?: string
+          high_contrast?: boolean
+          language?: string
+          layout_style?: string
+          reduced_motion?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: number
