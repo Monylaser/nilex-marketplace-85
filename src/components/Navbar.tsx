@@ -119,6 +119,9 @@ const Navbar = () => {
                       <Shield className="mr-2 h-4 w-4" /> Admin panel
                     </DropdownMenuItem>
                   )}
+                  <DropdownMenuItem onClick={() => navigate("/settings/appearance")}>
+                    <Palette className="mr-2 h-4 w-4" /> Appearance
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" /> Sign out
