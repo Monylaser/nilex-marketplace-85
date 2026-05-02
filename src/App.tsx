@@ -25,6 +25,7 @@ import AdminBoostPackages from "./pages/admin/AdminBoostPackages";
 import AdminSearch from "./pages/admin/AdminSearch";
 import AdminEscrow from "./pages/admin/AdminEscrow";
 import SellerAnalytics from "./pages/SellerAnalytics";
+import AppearanceSettings from "./pages/AppearanceSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <AppearanceProvider>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
