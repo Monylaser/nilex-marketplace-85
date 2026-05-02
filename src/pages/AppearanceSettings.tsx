@@ -11,17 +11,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Sun, Moon, Monitor, Type, LayoutGrid, Languages, Eye, Activity } from "lucide-react";
-import { Helmet } from "react-helmet";
+import { useEffect } from "react";
 
 const AppearanceSettings = () => {
   const { settings, resolvedTheme, update } = useAppearance();
 
+  useEffect(() => {
+    document.title = "Appearance Settings | Nilex";
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Helmet>
-        <title>Appearance Settings | Nilex</title>
-        <meta name="description" content="Customize Nilex appearance: dark mode, font size, layout, language, and accessibility." />
-      </Helmet>
       <Navbar />
       <div className="container max-w-3xl py-8 space-y-6">
         <header className="space-y-1">
