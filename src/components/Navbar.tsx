@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Menu, X, User, LogOut, Shield, MessageCircle } from "lucide-react";
+import { Plus, Menu, X, User, LogOut, Shield, MessageCircle, Sun, Moon, Palette } from "lucide-react";
+import { useAppearance } from "@/hooks/useAppearance";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
