@@ -77,6 +77,17 @@ const Navbar = () => {
             </Button>
           </Link>
 
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full"
+            onClick={toggleDark}
+            aria-label={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            title={resolvedTheme === "dark" ? "Light mode" : "Dark mode"}
+          >
+            {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
+
           {user ? (
             <>
               <Link to="/chat" className="relative">
