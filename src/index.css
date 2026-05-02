@@ -56,6 +56,92 @@
     --font-display: 'Playfair Display', serif;
     --font-body: 'DM Sans', sans-serif;
   }
+
+  /* Dark mode: deep navy + muted gold (Egyptian on-brand) */
+  .dark {
+    --background: 220 45% 8%;
+    --foreground: 38 30% 94%;
+
+    --card: 220 40% 12%;
+    --card-foreground: 38 30% 94%;
+
+    --popover: 220 40% 12%;
+    --popover-foreground: 38 30% 94%;
+
+    --primary: 42 75% 58%;
+    --primary-foreground: 220 45% 10%;
+
+    --secondary: 220 35% 18%;
+    --secondary-foreground: 38 30% 94%;
+
+    --muted: 220 30% 16%;
+    --muted-foreground: 38 15% 70%;
+
+    --accent: 42 75% 55%;
+    --accent-foreground: 220 45% 10%;
+
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 30% 22%;
+    --input: 220 30% 22%;
+    --ring: 42 75% 55%;
+
+    --gold: 42 75% 58%;
+    --gold-light: 42 70% 68%;
+    --terracotta: 16 60% 55%;
+    --sand: 220 30% 16%;
+    --sand-dark: 220 35% 12%;
+    --navy: 220 45% 8%;
+    --navy-light: 220 35% 18%;
+
+    --sidebar-background: 220 50% 6%;
+    --sidebar-foreground: 38 30% 94%;
+    --sidebar-primary: 42 75% 58%;
+    --sidebar-primary-foreground: 220 45% 8%;
+    --sidebar-accent: 220 35% 14%;
+    --sidebar-accent-foreground: 38 30% 94%;
+    --sidebar-border: 220 30% 18%;
+    --sidebar-ring: 42 75% 58%;
+  }
+
+  /* Font size scaling */
+  html[data-font-size="sm"] { font-size: 14px; }
+  html[data-font-size="md"] { font-size: 16px; }
+  html[data-font-size="lg"] { font-size: 18px; }
+  html[data-font-size="xl"] { font-size: 20px; }
+
+  /* High contrast */
+  .high-contrast {
+    --border: 0 0% 0%;
+    --ring: 42 100% 50%;
+    --foreground: 0 0% 0%;
+  }
+  .dark.high-contrast {
+    --border: 0 0% 100%;
+    --foreground: 0 0% 100%;
+    --background: 0 0% 0%;
+  }
+
+  /* Reduced motion */
+  .reduced-motion *,
+  .reduced-motion *::before,
+  .reduced-motion *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Density */
+  [data-density="compact"] { --density-pad: 0.5rem; }
+  [data-density="comfortable"] { --density-pad: 1rem; }
+
+  /* Focus indicators (always-on for keyboard nav) */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
 }
 
 @layer base {
@@ -63,9 +149,14 @@
     @apply border-border;
   }
 
+  html {
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+    transition: background-color 200ms ease, color 200ms ease;
   }
 
   h1, h2, h3 {

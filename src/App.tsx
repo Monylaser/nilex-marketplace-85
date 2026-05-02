@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { AppearanceProvider } from "@/hooks/useAppearance";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import PostAd from "./pages/PostAd";
@@ -24,6 +25,7 @@ import AdminBoostPackages from "./pages/admin/AdminBoostPackages";
 import AdminSearch from "./pages/admin/AdminSearch";
 import AdminEscrow from "./pages/admin/AdminEscrow";
 import SellerAnalytics from "./pages/SellerAnalytics";
+import AppearanceSettings from "./pages/AppearanceSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +37,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <AppearanceProvider>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -46,6 +49,7 @@ const App = () => (
             <Route path="/chat/:userId" element={<ProtectedRoute><ChatThread /></ProtectedRoute>} />
             <Route path="/escrow/:id" element={<ProtectedRoute><EscrowTransaction /></ProtectedRoute>} />
             <Route path="/seller/analytics" element={<ProtectedRoute><SellerAnalytics /></ProtectedRoute>} />
+            <Route path="/settings/appearance" element={<AppearanceSettings />} />
             <Route
               path="/admin"
               element={
@@ -65,6 +69,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </AppearanceProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Menu, X, User, LogOut, Shield, MessageCircle } from "lucide-react";
+import { Plus, Menu, X, User, LogOut, Shield, MessageCircle, Sun, Moon, Palette } from "lucide-react";
+import { useAppearance } from "@/hooks/useAppearance";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +24,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const unread = useUnreadMessages();
   const prefs = useNotifyPrefs();
+  const { resolvedTheme, toggleDark } = useAppearance();
 
   // Global new-message toast/sound (works on any page when chat is not open)
   useEffect(() => {
@@ -75,6 +77,17 @@ const Navbar = () => {
             </Button>
           </Link>
 
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full"
+            onClick={toggleDark}
+            aria-label={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            title={resolvedTheme === "dark" ? "Light mode" : "Dark mode"}
+          >
+            {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
+
           {user ? (
             <>
               <Link to="/chat" className="relative">
@@ -106,6 +119,9 @@ const Navbar = () => {
                       <Shield className="mr-2 h-4 w-4" /> Admin panel
                     </DropdownMenuItem>
                   )}
+                  <DropdownMenuItem onClick={() => navigate("/settings/appearance")}>
+                    <Palette className="mr-2 h-4 w-4" /> Appearance
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" /> Sign out
