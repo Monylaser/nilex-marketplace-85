@@ -24,6 +24,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const unread = useUnreadMessages();
   const prefs = useNotifyPrefs();
+  const { resolvedTheme, toggleDark } = useAppearance();
 
   // Global new-message toast/sound (works on any page when chat is not open)
   useEffect(() => {
