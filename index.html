@@ -20,7 +20,7 @@
 
   <body>
     <script>
-      // No-flash theme apply
+      // No-flash theme + RTL apply
       try {
         var s = JSON.parse(localStorage.getItem('nilex.appearance') || '{}');
         var mode = s.dark_mode || 'system';
@@ -32,6 +32,9 @@
         if (s.reduced_motion) r.classList.add('reduced-motion');
         if (s.font_size) r.setAttribute('data-font-size', s.font_size);
         if (s.density) r.setAttribute('data-density', s.density);
+        var lang = s.language || 'en';
+        r.setAttribute('lang', lang);
+        r.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
       } catch (e) {}
     </script>
     <div id="root"></div>

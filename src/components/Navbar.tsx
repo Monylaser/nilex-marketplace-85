@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Menu, X, User, LogOut, Shield, MessageCircle, Sun, Moon, Palette } from "lucide-react";
+import { Plus, Menu, X, User, LogOut, Shield, MessageCircle, Sun, Moon, Palette, Languages } from "lucide-react";
 import { useAppearance } from "@/hooks/useAppearance";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,6 +10,7 @@ import { useNotifyPrefs } from "@/hooks/useNotifyPrefs";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { playNotifySound, requestNotifyPermission, showBrowserNotification } from "@/lib/notifySound";
+import { useT } from "@/lib/i18n";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,9 +25,9 @@ const Navbar = () => {
   const navigate = useNavigate();
   const unread = useUnreadMessages();
   const prefs = useNotifyPrefs();
-  const { resolvedTheme, toggleDark } = useAppearance();
+  const { resolvedTheme, toggleDark, settings, update } = useAppearance();
+  const { t } = useT();
 
-  // Global new-message toast/sound (works on any page when chat is not open)
   useEffect(() => {
     if (!user) return;
     requestNotifyPermission();
@@ -36,10 +37,8 @@ const Navbar = () => {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages", filter: `receiver_id=eq.${user.id}` },
         async (payload) => {
-          // Respect chat-category preference
           if (!prefs.chatEnabled) return;
           const m: any = payload.new;
-          // Skip if user is already viewing this thread
           if (window.location.pathname === `/chat/${m.sender_id}`) return;
           playNotifySound();
           const { data: p } = await supabase
@@ -58,22 +57,25 @@ const Navbar = () => {
     navigate("/");
   };
 
+  const toggleLang = () =>
+    update({ language: settings.language === "ar" ? "en" : "ar" });
+
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
-      <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="font-display text-2xl font-bold text-gradient-gold">
-          Nilex
+    <nav className="sticky top-0 z-50 border-b border-border glass">
+      <div className="container flex h-16 items-center justify-between gap-3">
+        <Link to="/" className="font-display text-2xl font-bold text-gradient-gold shrink-0">
+          {t("brand.name")}
         </Link>
 
         <div className="hidden items-center gap-6 md:flex">
-          <Link to="/" className="text-sm font-medium text-foreground/70 transition hover:text-foreground">Home</Link>
-          <Link to="/browse" className="text-sm font-medium text-foreground/70 transition hover:text-foreground">Browse</Link>
-          <Link to="/browse?category=cars" className="text-sm font-medium text-foreground/70 transition hover:text-foreground">Cars</Link>
-          <Link to="/browse?category=real-estate" className="text-sm font-medium text-foreground/70 transition hover:text-foreground">Real Estate</Link>
+          <Link to="/" className="text-sm font-medium text-foreground/70 transition hover:text-foreground">{t("nav.home")}</Link>
+          <Link to="/browse" className="text-sm font-medium text-foreground/70 transition hover:text-foreground">{t("nav.browse")}</Link>
+          <Link to="/browse?category=cars" className="text-sm font-medium text-foreground/70 transition hover:text-foreground">{t("nav.cars")}</Link>
+          <Link to="/browse?category=real-estate" className="text-sm font-medium text-foreground/70 transition hover:text-foreground">{t("nav.realEstate")}</Link>
 
           <Link to="/post-ad">
             <Button variant="gold" size="sm" className="gap-1.5">
-              <Plus className="h-4 w-4" /> Post Ad
+              <Plus className="h-4 w-4" /> {t("nav.postAd")}
             </Button>
           </Link>
 
@@ -81,9 +83,20 @@ const Navbar = () => {
             variant="ghost"
             size="icon"
             className="rounded-full"
+            onClick={toggleLang}
+            aria-label="Toggle language"
+            title={settings.language === "ar" ? "English" : "العربية"}
+          >
+            <Languages className="h-5 w-5" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full"
             onClick={toggleDark}
-            aria-label={resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            title={resolvedTheme === "dark" ? "Light mode" : "Dark mode"}
+            aria-label={resolvedTheme === "dark" ? t("nav.lightMode") : t("nav.darkMode")}
+            title={resolvedTheme === "dark" ? t("nav.lightMode") : t("nav.darkMode")}
           >
             {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
@@ -95,7 +108,7 @@ const Navbar = () => {
                   <MessageCircle className="h-5 w-5" />
                 </Button>
                 {unread > 0 && (
-                  <Badge className="absolute -right-1 -top-1 h-5 min-w-5 px-1 bg-gold text-accent-foreground text-[10px] flex items-center justify-center rounded-full">
+                  <Badge className="absolute -end-1 -top-1 h-5 min-w-5 px-1 bg-gold text-accent-foreground text-[10px] flex items-center justify-center rounded-full">
                     {unread > 9 ? "9+" : unread}
                   </Badge>
                 )}
@@ -108,33 +121,33 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => navigate("/profile")}>
-                    <User className="mr-2 h-4 w-4" /> My account
+                    <User className="me-2 h-4 w-4" /> {t("nav.account")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/chat")}>
-                    <MessageCircle className="mr-2 h-4 w-4" /> Messages
-                    {unread > 0 && <Badge className="ml-auto bg-gold text-accent-foreground">{unread}</Badge>}
+                    <MessageCircle className="me-2 h-4 w-4" /> {t("nav.messages")}
+                    {unread > 0 && <Badge className="ms-auto bg-gold text-accent-foreground">{unread}</Badge>}
                   </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem onClick={() => navigate("/admin")}>
-                      <Shield className="mr-2 h-4 w-4" /> Admin panel
+                      <Shield className="me-2 h-4 w-4" /> {t("nav.admin")}
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem onClick={() => navigate("/settings/appearance")}>
-                    <Palette className="mr-2 h-4 w-4" /> Appearance
+                    <Palette className="me-2 h-4 w-4" /> {t("nav.appearance")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="mr-2 h-4 w-4" /> Sign out
+                    <LogOut className="me-2 h-4 w-4" /> {t("common.signOut")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
           ) : (
-            <Link to="/auth"><Button variant="outline" size="sm">Sign in</Button></Link>
+            <Link to="/auth"><Button variant="outline" size="sm">{t("common.signIn")}</Button></Link>
           )}
         </div>
 
-        <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
@@ -148,28 +161,38 @@ const Navbar = () => {
             className="overflow-hidden border-t border-border md:hidden"
           >
             <div className="container flex flex-col gap-3 py-4">
-              <Link to="/" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">Home</Link>
-              <Link to="/browse" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">Browse</Link>
-              <Link to="/browse?category=cars" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">Cars</Link>
-              <Link to="/browse?category=real-estate" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">Real Estate</Link>
+              <Link to="/" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">{t("nav.home")}</Link>
+              <Link to="/browse" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">{t("nav.browse")}</Link>
+              <Link to="/browse?category=cars" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">{t("nav.cars")}</Link>
+              <Link to="/browse?category=real-estate" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">{t("nav.realEstate")}</Link>
               <Link to="/post-ad" onClick={() => setMobileOpen(false)}>
                 <Button variant="gold" size="sm" className="w-full gap-1.5">
-                  <Plus className="h-4 w-4" /> Post Ad
+                  <Plus className="h-4 w-4" /> {t("nav.postAd")}
                 </Button>
               </Link>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1 gap-2" onClick={toggleLang}>
+                  <Languages className="h-4 w-4" /> {settings.language === "ar" ? "English" : "العربية"}
+                </Button>
+                <Button variant="outline" size="sm" className="flex-1 gap-2" onClick={toggleDark}>
+                  {resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  {resolvedTheme === "dark" ? t("nav.lightMode") : t("nav.darkMode")}
+                </Button>
+              </div>
               {user ? (
                 <>
                   <Link to="/chat" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 flex items-center gap-2">
-                    Messages
+                    {t("nav.messages")}
                     {unread > 0 && <Badge className="bg-gold text-accent-foreground">{unread}</Badge>}
                   </Link>
-                  <Link to="/profile" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">My account</Link>
-                  {isAdmin && <Link to="/admin" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">Admin panel</Link>}
-                  <Button variant="outline" size="sm" onClick={() => { handleSignOut(); setMobileOpen(false); }}>Sign out</Button>
+                  <Link to="/profile" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">{t("nav.account")}</Link>
+                  <Link to="/settings/appearance" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">{t("nav.appearance")}</Link>
+                  {isAdmin && <Link to="/admin" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2">{t("nav.admin")}</Link>}
+                  <Button variant="outline" size="sm" onClick={() => { handleSignOut(); setMobileOpen(false); }}>{t("common.signOut")}</Button>
                 </>
               ) : (
                 <Link to="/auth" onClick={() => setMobileOpen(false)}>
-                  <Button variant="outline" size="sm" className="w-full">Sign in</Button>
+                  <Button variant="outline" size="sm" className="w-full">{t("common.signIn")}</Button>
                 </Link>
               )}
             </div>

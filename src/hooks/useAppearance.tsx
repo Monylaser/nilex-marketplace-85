@@ -59,6 +59,7 @@ function applyToDom(s: AppearanceSettings, resolved: "light" | "dark") {
   root.setAttribute("data-font-size", s.font_size);
   root.setAttribute("data-density", s.density);
   root.setAttribute("lang", s.language);
+  root.setAttribute("dir", s.language === "ar" ? "rtl" : "ltr");
 }
 
 export const AppearanceProvider = ({ children }: { children: ReactNode }) => {

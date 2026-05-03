@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -151,16 +151,50 @@
 
   html {
     transition: background-color 200ms ease, color 200ms ease;
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);
     transition: background-color 200ms ease, color 200ms ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3 {
     font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  /* Arabic / RTL: switch fonts and tighten line-height for Arabic glyphs */
+  html[lang="ar"] body,
+  html[dir="rtl"] body {
+    font-family: 'Tajawal', 'DM Sans', sans-serif;
+  }
+  html[lang="ar"] h1,
+  html[lang="ar"] h2,
+  html[lang="ar"] h3,
+  html[dir="rtl"] h1,
+  html[dir="rtl"] h2,
+  html[dir="rtl"] h3 {
+    font-family: 'Cairo', 'Playfair Display', serif;
+    letter-spacing: 0;
+  }
+
+  /* RTL: flip lucide icons that imply direction */
+  html[dir="rtl"] .lucide-chevron-right,
+  html[dir="rtl"] .lucide-chevron-left,
+  html[dir="rtl"] .lucide-arrow-right,
+  html[dir="rtl"] .lucide-arrow-left,
+  html[dir="rtl"] .lucide-send {
+    transform: scaleX(-1);
+  }
+
+  /* Selection */
+  ::selection {
+    background: hsl(var(--gold) / 0.35);
+    color: hsl(var(--foreground));
   }
 }
 
@@ -171,9 +205,37 @@
   .gradient-navy {
     background: linear-gradient(135deg, hsl(var(--navy)) 0%, hsl(var(--navy-light)) 100%);
   }
+  .gradient-sand {
+    background: linear-gradient(180deg, hsl(var(--sand)) 0%, hsl(var(--sand-dark)) 100%);
+  }
   .text-gradient-gold {
     background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--terracotta)) 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .shadow-premium {
+    box-shadow:
+      0 1px 2px hsl(var(--navy) / 0.06),
+      0 8px 24px -8px hsl(var(--navy) / 0.18),
+      0 24px 48px -24px hsl(var(--gold) / 0.20);
+  }
+  .shadow-soft {
+    box-shadow: 0 1px 3px hsl(var(--navy) / 0.05), 0 4px 14px -8px hsl(var(--navy) / 0.10);
+  }
+  .ring-gold {
+    box-shadow: 0 0 0 2px hsl(var(--gold) / 0.4);
+  }
+  .glass {
+    background: hsl(var(--background) / 0.65);
+    backdrop-filter: saturate(180%) blur(12px);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+  }
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+  .hover-lift:hover {
+    transform: translateY(-3px);
   }
 }
