@@ -50,6 +50,48 @@ export type Database = {
         }
         Relationships: []
       }
+      ad_videos: {
+        Row: {
+          ad_id: string
+          created_at: string
+          duration_seconds: number | null
+          error: string | null
+          id: string
+          size_bytes: number | null
+          status: string
+          thumbnail_url: string | null
+          updated_at: string
+          user_id: string
+          video_url: string | null
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string
+          duration_seconds?: number | null
+          error?: string | null
+          id?: string
+          size_bytes?: number | null
+          status?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id: string
+          video_url?: string | null
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string
+          duration_seconds?: number | null
+          error?: string | null
+          id?: string
+          size_bytes?: number | null
+          status?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       ad_views: {
         Row: {
           ad_id: string

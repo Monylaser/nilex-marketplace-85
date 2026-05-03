@@ -14,6 +14,7 @@ import VerificationBadge from "@/components/VerificationBadge";
 import EscrowButton from "@/components/EscrowButton";
 import { isEscrowEligible } from "@/lib/escrow";
 import { trackAdView, trackInquiry, trackFavorite } from "@/lib/analytics";
+import AdVideo from "@/components/AdVideo";
 
 const AdDetail = () => {
   const { id } = useParams();
@@ -135,6 +136,8 @@ const AdDetail = () => {
               </div>
             )}
           </Card>
+
+          <AdVideo adId={ad.id} ownerId={ad.user_id} />
 
           <div className="mt-6">
             <div className="flex items-start justify-between gap-3">
