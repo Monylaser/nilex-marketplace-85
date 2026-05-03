@@ -14,6 +14,7 @@ import VerificationBadge from "@/components/VerificationBadge";
 import EscrowButton from "@/components/EscrowButton";
 import { isEscrowEligible } from "@/lib/escrow";
 import { trackAdView, trackInquiry, trackFavorite } from "@/lib/analytics";
+import AdVideo from "@/components/AdVideo";
 
 const AdDetail = () => {
   const { id } = useParams();
