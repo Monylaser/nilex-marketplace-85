@@ -137,6 +137,8 @@ const AdDetail = () => {
             )}
           </Card>
 
+          <AdVideo adId={ad.id} ownerId={ad.user_id} />
+
           <div className="mt-6">
             <div className="flex items-start justify-between gap-3">
               <div>
