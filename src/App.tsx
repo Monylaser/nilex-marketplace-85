@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AppearanceProvider } from "@/hooks/useAppearance";
+import { I18nProvider } from "@/lib/i18n";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import PostAd from "./pages/PostAd";
@@ -38,6 +39,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <AppearanceProvider>
+          <I18nProvider>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -69,6 +71,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </I18nProvider>
           </AppearanceProvider>
         </AuthProvider>
       </BrowserRouter>
