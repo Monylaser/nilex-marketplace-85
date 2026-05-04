@@ -15,11 +15,13 @@ import EscrowButton from "@/components/EscrowButton";
 import { isEscrowEligible } from "@/lib/escrow";
 import { trackAdView, trackInquiry, trackFavorite } from "@/lib/analytics";
 import AdVideo from "@/components/AdVideo";
+import { useT } from "@/lib/i18n";
 
 const AdDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useT();
   const [ad, setAd] = useState<any>(null);
   const [seller, setSeller] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -61,7 +63,7 @@ const AdDetail = () => {
   }, [user, id]);
 
   const toggleFav = async () => {
-    if (!user) return toast.error("Sign in to save favorites");
+    if (!user) return toast.error(t("ad.signInToFavorite"));
     if (fav) {
       await supabase.from("favorites").delete().eq("user_id", user.id).eq("ad_id", id!);
       setFav(false);
@@ -70,12 +72,12 @@ const AdDetail = () => {
       await supabase.from("favorites").insert({ user_id: user.id, ad_id: id! });
       setFav(true);
       trackFavorite(id!, 1);
-      toast.success("Saved to favorites");
+      toast.success(t("ad.savedToFavorites"));
     }
   };
 
   const sendMessage = async () => {
-    if (!user) return toast.error("Sign in to message the seller");
+    if (!user) return toast.error(t("ad.signInToMessage"));
     if (!msg.trim() || !ad) return;
     setSending(true);
     const { error } = await supabase.from("messages").insert({
@@ -87,7 +89,7 @@ const AdDetail = () => {
     setSending(false);
     if (error) return toast.error(error.message);
     trackInquiry(ad.id);
-    toast.success("Message sent!");
+    toast.success(t("ad.messageSent"));
     setMsg("");
   };
 
@@ -105,8 +107,8 @@ const AdDetail = () => {
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container py-32 text-center">
-          <h1 className="font-display text-2xl">Ad not found</h1>
-          <Link to="/browse"><Button variant="gold" className="mt-4">Browse ads</Button></Link>
+          <h1 className="font-display text-2xl">{t("ad.notFound")}</h1>
+          <Link to="/browse"><Button variant="gold" className="mt-4">{t("ad.browseAds")}</Button></Link>
         </div>
         <Footer />
       </div>
@@ -125,7 +127,7 @@ const AdDetail = () => {
               {images[0] ? (
                 <img src={images[0]} alt={ad.title} className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full items-center justify-center text-muted-foreground">No image</div>
+                <div className="flex h-full items-center justify-center text-muted-foreground">{t("ad.noImage")}</div>
               )}
             </div>
             {images.length > 1 && (
@@ -143,7 +145,7 @@ const AdDetail = () => {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h1 className="font-display text-2xl font-bold md:text-3xl">{ad.title}</h1>
-                <p className="mt-1 text-3xl font-bold text-gold">{Number(ad.price).toLocaleString()} EGP</p>
+                <p className="mt-1 text-3xl font-bold text-gold">{Number(ad.price).toLocaleString()} {t("common.egp")}</p>
               </div>
               <Button variant="outline" size="icon" onClick={toggleFav}>
                 <Heart className={`h-5 w-5 ${fav ? "fill-red-500 text-red-500" : ""}`} />
@@ -154,11 +156,11 @@ const AdDetail = () => {
               {ad.categories && <Badge variant="secondary">{ad.categories.name}</Badge>}
               <Badge variant="outline">{ad.condition}</Badge>
               <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{ad.city || ""} {ad.governorate}</span>
-              <span className="flex items-center gap-1"><Eye className="h-4 w-4" />{ad.views} views</span>
+              <span className="flex items-center gap-1"><Eye className="h-4 w-4" />{ad.views} {t("common.views")}</span>
             </div>
 
             <div className="mt-6 prose prose-sm max-w-none">
-              <h3 className="font-display text-lg font-semibold">Description</h3>
+              <h3 className="font-display text-lg font-semibold">{t("ad.description")}</h3>
               <p className="whitespace-pre-wrap text-foreground/80">{ad.description}</p>
             </div>
           </div>
@@ -166,17 +168,17 @@ const AdDetail = () => {
 
         <aside className="space-y-4">
           <Card className="p-5">
-            <h3 className="font-display font-semibold">Seller</h3>
+            <h3 className="font-display font-semibold">{t("ad.seller")}</h3>
             <div className="mt-3 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
                 {seller?.avatar ? <img src={seller.avatar} className="h-full w-full rounded-full object-cover" /> : <UserIcon className="h-6 w-6" />}
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-medium truncate">{seller?.name || "Nilex user"}</p>
+                  <p className="font-medium truncate">{seller?.name || t("brand.name")}</p>
                   <VerificationBadge level={seller?.verification_level} />
                 </div>
-                <p className="text-xs text-muted-foreground">{seller?.total_points || 0} points</p>
+                <p className="text-xs text-muted-foreground">{t("ad.points", { n: seller?.total_points || 0 })}</p>
               </div>
             </div>
             {seller?.id && user && seller.id !== user.id && (
@@ -185,7 +187,7 @@ const AdDetail = () => {
                 className="mt-4 w-full gap-2"
                 onClick={() => navigate(`/chat/${seller.id}`)}
               >
-                <MessageCircle className="h-4 w-4" /> Open chat
+                <MessageCircle className="h-4 w-4" /> {t("ad.openChat")}
               </Button>
             )}
           </Card>
@@ -200,9 +202,9 @@ const AdDetail = () => {
           )}
 
           <Card className="p-5">
-            <h3 className="font-display font-semibold">Message seller</h3>
+            <h3 className="font-display font-semibold">{t("ad.message")}</h3>
             <Textarea
-              placeholder="Hi, is this still available?"
+              placeholder={t("ad.messagePlaceholder")}
               value={msg}
               onChange={(e) => setMsg(e.target.value)}
               rows={4}
@@ -210,7 +212,7 @@ const AdDetail = () => {
             />
             <Button onClick={sendMessage} disabled={sending || !msg.trim()} variant="gold" className="mt-3 w-full gap-2">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Send message
+              {t("ad.sendMessage")}
             </Button>
           </Card>
         </aside>
