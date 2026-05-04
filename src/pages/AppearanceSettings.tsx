@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { useEffect } from "react";
 import { useT } from "@/lib/i18n";
+import { Moon, Sun, Monitor, Type, LayoutGrid, Languages, Eye, Activity } from "lucide-react";
 
 const AppearanceSettings = () => {
   const { settings, resolvedTheme, update } = useAppearance();

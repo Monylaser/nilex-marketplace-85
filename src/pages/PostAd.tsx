@@ -13,10 +13,12 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import AiAdAssistant, { type AiResult } from "@/components/AiAdAssistant";
+import { useT } from "@/lib/i18n";
 
 const PostAd = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useT();
   const [busy, setBusy] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [governorates, setGovernorates] = useState<any[]>([]);
@@ -84,7 +86,7 @@ const PostAd = () => {
       .single();
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success("Ad posted!");
+    toast.success(t("post.posted"));
     navigate(`/ad/${data.id}`);
   };
 
@@ -101,8 +103,8 @@ const PostAd = () => {
       <Navbar />
       <div className="container max-w-2xl py-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="font-display text-3xl font-bold md:text-4xl">Post Your Ad</h1>
-          <p className="mt-2 text-muted-foreground">Reach millions of buyers across Egypt</p>
+          <h1 className="font-display text-3xl font-bold md:text-4xl">{t("post.title")}</h1>
+          <p className="mt-2 text-muted-foreground">{t("post.subtitle")}</p>
 
           <div className="mt-6">
             <AiAdAssistant
@@ -126,11 +128,11 @@ const PostAd = () => {
 
           <form onSubmit={submit} className="mt-8 space-y-5">
             <div className="space-y-2">
-              <Label>Title</Label>
+              <Label>{t("post.field.title")}</Label>
               <Input
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="e.g. BMW X5 2023 — Low Mileage"
+                placeholder={t("post.field.title.ph")}
                 required
                 maxLength={120}
               />
@@ -138,18 +140,18 @@ const PostAd = () => {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Category</Label>
+                <Label>{t("post.field.category")}</Label>
                 <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v, subcategory: "" })} required>
-                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("post.field.category")} /></SelectTrigger>
                   <SelectContent>
                     {categories.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Subcategory</Label>
+                <Label>{t("post.field.subcategory")}</Label>
                 <Select value={form.subcategory} onValueChange={(v) => setForm({ ...form, subcategory: v })} disabled={subcats.length === 0}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("post.field.subcategory")} /></SelectTrigger>
                   <SelectContent>
                     {subcats.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   </SelectContent>
@@ -159,18 +161,18 @@ const PostAd = () => {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Governorate</Label>
+                <Label>{t("post.field.governorate")}</Label>
                 <Select value={form.governorate} onValueChange={(v) => setForm({ ...form, governorate: v })} required>
-                  <SelectTrigger><SelectValue placeholder="Select governorate" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("post.field.governorate")} /></SelectTrigger>
                   <SelectContent>
                     {governorates.map((g) => <SelectItem key={g.id} value={g.name}>{g.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>City</Label>
+                <Label>{t("post.field.city")}</Label>
                 <Select value={form.city} onValueChange={(v) => setForm({ ...form, city: v })} disabled={cities.length === 0}>
-                  <SelectTrigger><SelectValue placeholder="Select city" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("post.field.city")} /></SelectTrigger>
                   <SelectContent>
                     {cities.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
@@ -180,47 +182,47 @@ const PostAd = () => {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Price (EGP)</Label>
+                <Label>{t("post.field.price")}</Label>
                 <Input type="number" min={0} value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
               </div>
               <div className="space-y-2">
-                <Label>Condition</Label>
+                <Label>{t("post.field.condition")}</Label>
                 <Select value={form.condition} onValueChange={(v: any) => setForm({ ...form, condition: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="new">New</SelectItem>
-                    <SelectItem value="used">Used</SelectItem>
-                    <SelectItem value="refurbished">Refurbished</SelectItem>
+                    <SelectItem value="new">{t("post.condition.new")}</SelectItem>
+                    <SelectItem value="used">{t("post.condition.used")}</SelectItem>
+                    <SelectItem value="refurbished">{t("post.condition.refurbished")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>Description</Label>
+              <Label>{t("post.field.description")}</Label>
               <Textarea
                 rows={5}
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Describe condition, features, reason for selling…"
+                placeholder={t("post.field.description.ph")}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Image URLs (one per line)</Label>
+              <Label>{t("post.field.images")}</Label>
               <Textarea
                 rows={3}
                 value={form.images}
                 onChange={(e) => setForm({ ...form, images: e.target.value })}
                 placeholder="https://… &#10;https://…"
               />
-              <p className="text-xs text-muted-foreground">Paste URLs of your photos. File upload coming soon.</p>
+              <p className="text-xs text-muted-foreground">{t("post.field.images.help")}</p>
             </div>
 
             <Button type="submit" variant="gold" size="lg" className="w-full" disabled={busy}>
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Publish Ad
+              {t("post.publish")}
             </Button>
           </form>
         </motion.div>

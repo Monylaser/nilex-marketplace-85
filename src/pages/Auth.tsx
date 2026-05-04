@@ -9,10 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 const Auth = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useT();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -71,32 +73,32 @@ const Auth = () => {
         className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-xl"
       >
         <Link to="/" className="block text-center font-display text-3xl font-bold text-gradient-gold">
-          Nilex
+          {t("brand.name")}
         </Link>
         <p className="mt-2 text-center text-sm text-muted-foreground">
-          Egypt's classifieds marketplace
+          {t("brand.tagline")}
         </p>
 
         <Tabs value={mode} onValueChange={(v) => setMode(v as any)} className="mt-6">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign in</TabsTrigger>
-            <TabsTrigger value="signup">Create account</TabsTrigger>
+            <TabsTrigger value="signin">{t("common.signIn")}</TabsTrigger>
+            <TabsTrigger value="signup">{t("common.signUp")}</TabsTrigger>
           </TabsList>
 
           <form onSubmit={handleEmail} className="mt-6 space-y-4">
             <TabsContent value="signup" className="space-y-4 mt-0">
               <div className="space-y-2">
-                <Label htmlFor="name">Full name</Label>
+                <Label htmlFor="name">{t("common.name")}</Label>
                 <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required={mode === "signup"} />
               </div>
             </TabsContent>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("common.email")}</Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("common.password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -109,19 +111,19 @@ const Auth = () => {
 
             <Button type="submit" variant="gold" size="lg" className="w-full" disabled={busy}>
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === "signup" ? "Create account" : "Sign in"}
+              {mode === "signup" ? t("common.signUp") : t("common.signIn")}
             </Button>
           </form>
         </Tabs>
 
         <div className="my-6 flex items-center gap-3">
           <div className="h-px flex-1 bg-border" />
-          <span className="text-xs uppercase text-muted-foreground">or</span>
+          <span className="text-xs uppercase text-muted-foreground">{t("auth.or")}</span>
           <div className="h-px flex-1 bg-border" />
         </div>
 
         <Button variant="outline" className="w-full" onClick={handleGoogle} disabled={busy}>
-          Continue with Google
+          {t("auth.continueWithGoogle")}
         </Button>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">

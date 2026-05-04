@@ -14,9 +14,11 @@ import { Loader2, Trash2, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import NotificationSettings from "@/components/NotificationSettings";
 import VerificationPanel from "@/components/VerificationPanel";
+import { useT } from "@/lib/i18n";
 
 const Profile = () => {
   const { user } = useAuth();
+  const { t } = useT();
   const [profile, setProfile] = useState<any>(null);
   const [points, setPoints] = useState<any>(null);
   const [myAds, setMyAds] = useState<any[]>([]);
@@ -77,7 +79,7 @@ const Profile = () => {
       <div className="container py-8">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="font-display text-3xl font-bold">My Account</h1>
+            <h1 className="font-display text-3xl font-bold">{t("nav.account")}</h1>
             <p className="text-sm text-muted-foreground">{profile?.email}</p>
           </div>
           <div className="flex gap-2">
@@ -88,12 +90,12 @@ const Profile = () => {
 
         <Tabs defaultValue="ads" className="mt-8">
           <TabsList>
-            <TabsTrigger value="ads">My Ads ({myAds.length})</TabsTrigger>
-            <TabsTrigger value="favs">Favorites ({favs.length})</TabsTrigger>
-            <TabsTrigger value="msgs">Messages</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="verify">Verification</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="ads">{t("profile.myAds")} ({myAds.length})</TabsTrigger>
+            <TabsTrigger value="favs">{t("profile.favorites")} ({favs.length})</TabsTrigger>
+            <TabsTrigger value="msgs">{t("nav.messages")}</TabsTrigger>
+            <TabsTrigger value="profile">{t("nav.profile")}</TabsTrigger>
+            <TabsTrigger value="verify">{t("profile.verification")}</TabsTrigger>
+            <TabsTrigger value="settings">{t("profile.notifications")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="ads" className="mt-6 space-y-3">
@@ -160,15 +162,15 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="profile" className="mt-6 max-w-lg space-y-4">
-            <div className="space-y-2"><Label>Name</Label>
+            <div className="space-y-2"><Label>{t("common.name")}</Label>
               <Input value={profile?.name || ""} onChange={(e) => setProfile({ ...profile, name: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Phone</Label>
+            <div className="space-y-2"><Label>{t("common.phone")}</Label>
               <Input value={profile?.phone || ""} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Governorate</Label>
+            <div className="space-y-2"><Label>{t("browse.governorate")}</Label>
               <Input value={profile?.governorate || ""} onChange={(e) => setProfile({ ...profile, governorate: e.target.value })} /></div>
-            <div className="space-y-2"><Label>City</Label>
+            <div className="space-y-2"><Label>{t("post.field.city")}</Label>
               <Input value={profile?.city || ""} onChange={(e) => setProfile({ ...profile, city: e.target.value })} /></div>
-            <Button variant="gold" onClick={saveProfile}>Save changes</Button>
+            <Button variant="gold" onClick={saveProfile}>{t("common.save")}</Button>
           </TabsContent>
 
           <TabsContent value="verify" className="mt-6 max-w-lg">
