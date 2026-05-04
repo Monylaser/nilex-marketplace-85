@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { MapPin, Eye, Loader2, Sparkles, Wand2 } from "lucide-react";
 import { useAiSearchPref } from "@/hooks/useAiSearch";
 import VerificationBadge from "@/components/VerificationBadge";
+import { useT } from "@/lib/i18n";
 
 interface Ad {
   id: string;
@@ -37,6 +38,7 @@ const Browse = () => {
   const [loading, setLoading] = useState(true);
   const [searchMode, setSearchMode] = useState<"ai" | "keyword" | null>(null);
   const { enabled: aiEnabled, setEnabled: setAiEnabled } = useAiSearchPref();
+  const { t } = useT();
 
   const q = params.get("q") || "";
   const cat = params.get("category") || "all";
@@ -156,33 +158,33 @@ const Browse = () => {
       <Navbar />
       <div className="container py-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h1 className="font-display text-3xl font-bold">Browse Ads</h1>
+          <h1 className="font-display text-3xl font-bold">{t("browse.title")}</h1>
           <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
             <Wand2 className="h-4 w-4 text-gold" />
-            <Label htmlFor="ai-search" className="text-sm cursor-pointer">AI Search</Label>
+            <Label htmlFor="ai-search" className="text-sm cursor-pointer">{t("browse.aiSearch")}</Label>
             <Switch id="ai-search" checked={aiEnabled} onCheckedChange={setAiEnabled} />
           </div>
         </div>
 
         <div className="mt-6 grid gap-3 md:grid-cols-[1fr_220px_220px]">
           <Input
-            placeholder={aiEnabled ? "Try: عربية صغيرة موفرة بنزين" : "Search ads…"}
+            placeholder={aiEnabled ? t("browse.searchPlaceholder.ai") : t("browse.searchPlaceholder.kw")}
             defaultValue={q}
             onKeyDown={(e) => e.key === "Enter" && update("q", (e.target as HTMLInputElement).value)}
           />
           <Select value={cat} onValueChange={(v) => update("category", v)}>
-            <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder={t("browse.category")} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
+              <SelectItem value="all">{t("common.allCategories")}</SelectItem>
               {categories.map((c) => (
                 <SelectItem key={c.id} value={c.slug}>{c.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={gov} onValueChange={(v) => update("governorate", v)}>
-            <SelectTrigger><SelectValue placeholder="Governorate" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder={t("browse.governorate")} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Egypt</SelectItem>
+              <SelectItem value="all">{t("common.allEgypt")}</SelectItem>
               {governorates.map((g) => (
                 <SelectItem key={g.id} value={g.name}>{g.name}</SelectItem>
               ))}
@@ -193,10 +195,10 @@ const Browse = () => {
         {q && searchMode && !loading && (
           <p className="mt-3 text-xs text-muted-foreground">
             {searchMode === "ai"
-              ? <>✨ AI semantic results for <span className="font-medium text-foreground">"{q}"</span></>
+              ? t("browse.aiResults", { q })
               : aiEnabled
-                ? <>AI returned no matches — showing keyword results for <span className="font-medium text-foreground">"{q}"</span></>
-                : <>Keyword results for <span className="font-medium text-foreground">"{q}"</span></>}
+                ? t("browse.aiFallback", { q })
+                : t("browse.kwResults", { q })}
           </p>
         )}
 
@@ -205,7 +207,7 @@ const Browse = () => {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : ads.length === 0 ? (
-          <p className="py-20 text-center text-muted-foreground">No ads found. Try different filters.</p>
+          <p className="py-20 text-center text-muted-foreground">{t("browse.empty")}</p>
         ) : (
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {ads.map((ad) => {
@@ -221,12 +223,12 @@ const Browse = () => {
                       )}
                       {ad.is_boosted && (
                         <Badge className="absolute left-2 top-2 gap-1 bg-gold text-accent-foreground">
-                          <Sparkles className="h-3 w-3" /> Boosted
+                          <Sparkles className="h-3 w-3" /> {t("browse.boosted")}
                         </Badge>
                       )}
                       {typeof ad.similarity === "number" && (
                         <Badge variant="secondary" className="absolute right-2 top-2 text-[10px]">
-                          {Math.round(ad.similarity * 100)}% match
+                          {t("browse.match", { percent: Math.round(ad.similarity * 100) })}
                         </Badge>
                       )}
                     </div>
@@ -236,7 +238,7 @@ const Browse = () => {
                         {ad.seller_level ? <VerificationBadge level={ad.seller_level} /> : null}
                       </div>
                       <p className="font-display text-lg font-bold text-gold">
-                        {Number(ad.price).toLocaleString()} EGP
+                        {Number(ad.price).toLocaleString()} {t("common.egp")}
                       </p>
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
