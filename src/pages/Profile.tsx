@@ -119,7 +119,7 @@ const Profile = () => {
                 <Link to={`/ad/${ad.id}`} className="flex-1">
                   <p className="font-medium">{ad.title}</p>
                   <p className="text-sm text-muted-foreground">
-                    {Number(ad.price).toLocaleString()} EGP · {ad.views} views · <Badge variant="outline">{ad.status}</Badge>
+                    {Number(ad.price).toLocaleString()} {t("common.egp")} · {t("profile.viewsLabel", { n: ad.views })} · <Badge variant="outline">{ad.status}</Badge>
                   </p>
                 </Link>
                 <Button variant="ghost" size="icon" onClick={() => deleteAd(ad.id)}>
