@@ -141,7 +141,7 @@ const Profile = () => {
                   </div>
                   <div>
                     <p className="font-medium line-clamp-1">{f.ads.title}</p>
-                    <p className="text-sm text-gold font-bold">{Number(f.ads.price).toLocaleString()} EGP</p>
+                    <p className="text-sm text-gold font-bold">{Number(f.ads.price).toLocaleString()} {t("common.egp")}</p>
                     <p className="text-xs text-muted-foreground">{f.ads.governorate}</p>
                   </div>
                 </Card>
