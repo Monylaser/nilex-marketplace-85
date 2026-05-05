@@ -106,14 +106,14 @@ const Profile = () => {
                     <BarChart3 className="h-5 w-5 text-gold" />
                   </div>
                   <div>
-                    <p className="font-medium">Seller analytics</p>
-                    <p className="text-sm text-muted-foreground">Views, inquiries, favorites & top ads</p>
+                    <p className="font-medium">{t("profile.sellerAnalytics")}</p>
+                    <p className="text-sm text-muted-foreground">{t("profile.sellerAnalytics.desc")}</p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">Open</Button>
+                <Button variant="outline" size="sm">{t("profile.open")}</Button>
               </Card>
             </Link>
-            {myAds.length === 0 && <p className="text-muted-foreground">You haven't posted any ads yet.</p>}
+            {myAds.length === 0 && <p className="text-muted-foreground">{t("profile.noAds")}</p>}
             {myAds.map((ad) => (
               <Card key={ad.id} className="flex items-center justify-between p-4">
                 <Link to={`/ad/${ad.id}`} className="flex-1">
