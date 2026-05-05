@@ -130,7 +130,7 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="favs" className="mt-6 grid gap-3 sm:grid-cols-2">
-            {favs.length === 0 && <p className="text-muted-foreground">No favorites yet.</p>}
+            {favs.length === 0 && <p className="text-muted-foreground">{t("profile.noFavs")}</p>}
             {favs.map((f) => f.ads && (
               <Link key={f.ad_id} to={`/ad/${f.ads.id}`}>
                 <Card className="p-3 flex gap-3 hover:shadow-md transition">
