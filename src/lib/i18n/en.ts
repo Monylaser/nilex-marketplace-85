@@ -143,6 +143,25 @@ export const en: Record<string, string> = {
   "profile.points": "Points",
   "profile.verification": "Verification",
   "profile.notifications": "Notifications",
+  "profile.level": "Level {n}",
+  "profile.pts": "{n} pts",
+  "profile.updated": "Profile updated",
+  "profile.adDeleted": "Ad deleted",
+  "profile.noAds": "You haven't posted any ads yet.",
+  "profile.noFavs": "No favorites yet.",
+  "profile.noMsgs": "No messages yet.",
+  "profile.youSent": "You sent",
+  "profile.received": "Received",
+  "profile.sellerAnalytics": "Seller analytics",
+  "profile.sellerAnalytics.desc": "Views, inquiries, favorites & top ads",
+  "profile.open": "Open",
+  "profile.viewsLabel": "{n} views",
+
+  // Auth toasts
+  "auth.created": "Account created! Welcome to Nilex.",
+  "auth.welcomeBack": "Welcome back!",
+  "auth.failed": "Authentication failed",
+  "auth.terms": "By continuing you agree to Nilex's terms of service.",
 
   // Appearance
   "appear.title": "Appearance",

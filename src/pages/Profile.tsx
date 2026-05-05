@@ -54,13 +54,13 @@ const Profile = () => {
       city: profile.city,
     }).eq("id", user.id);
     if (error) return toast.error(error.message);
-    toast.success("Profile updated");
+    toast.success(t("profile.updated"));
   };
 
   const deleteAd = async (id: string) => {
     const { error } = await supabase.from("ads").delete().eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Ad deleted");
+    toast.success(t("profile.adDeleted"));
     refresh();
   };
 
@@ -83,8 +83,8 @@ const Profile = () => {
             <p className="text-sm text-muted-foreground">{profile?.email}</p>
           </div>
           <div className="flex gap-2">
-            <Badge variant="secondary">Level {points?.level || 1}</Badge>
-            <Badge className="bg-gold text-accent-foreground">{points?.points || 0} pts</Badge>
+            <Badge variant="secondary">{t("profile.level", { n: points?.level || 1 })}</Badge>
+            <Badge className="bg-gold text-accent-foreground">{t("profile.pts", { n: points?.points || 0 })}</Badge>
           </div>
         </div>
 
@@ -106,20 +106,20 @@ const Profile = () => {
                     <BarChart3 className="h-5 w-5 text-gold" />
                   </div>
                   <div>
-                    <p className="font-medium">Seller analytics</p>
-                    <p className="text-sm text-muted-foreground">Views, inquiries, favorites & top ads</p>
+                    <p className="font-medium">{t("profile.sellerAnalytics")}</p>
+                    <p className="text-sm text-muted-foreground">{t("profile.sellerAnalytics.desc")}</p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">Open</Button>
+                <Button variant="outline" size="sm">{t("profile.open")}</Button>
               </Card>
             </Link>
-            {myAds.length === 0 && <p className="text-muted-foreground">You haven't posted any ads yet.</p>}
+            {myAds.length === 0 && <p className="text-muted-foreground">{t("profile.noAds")}</p>}
             {myAds.map((ad) => (
               <Card key={ad.id} className="flex items-center justify-between p-4">
                 <Link to={`/ad/${ad.id}`} className="flex-1">
                   <p className="font-medium">{ad.title}</p>
                   <p className="text-sm text-muted-foreground">
-                    {Number(ad.price).toLocaleString()} EGP · {ad.views} views · <Badge variant="outline">{ad.status}</Badge>
+                    {Number(ad.price).toLocaleString()} {t("common.egp")} · {t("profile.viewsLabel", { n: ad.views })} · <Badge variant="outline">{ad.status}</Badge>
                   </p>
                 </Link>
                 <Button variant="ghost" size="icon" onClick={() => deleteAd(ad.id)}>
@@ -130,7 +130,7 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="favs" className="mt-6 grid gap-3 sm:grid-cols-2">
-            {favs.length === 0 && <p className="text-muted-foreground">No favorites yet.</p>}
+            {favs.length === 0 && <p className="text-muted-foreground">{t("profile.noFavs")}</p>}
             {favs.map((f) => f.ads && (
               <Link key={f.ad_id} to={`/ad/${f.ads.id}`}>
                 <Card className="p-3 flex gap-3 hover:shadow-md transition">
@@ -141,7 +141,7 @@ const Profile = () => {
                   </div>
                   <div>
                     <p className="font-medium line-clamp-1">{f.ads.title}</p>
-                    <p className="text-sm text-gold font-bold">{Number(f.ads.price).toLocaleString()} EGP</p>
+                    <p className="text-sm text-gold font-bold">{Number(f.ads.price).toLocaleString()} {t("common.egp")}</p>
                     <p className="text-xs text-muted-foreground">{f.ads.governorate}</p>
                   </div>
                 </Card>
@@ -150,11 +150,11 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="msgs" className="mt-6 space-y-2">
-            {msgs.length === 0 && <p className="text-muted-foreground">No messages yet.</p>}
+            {msgs.length === 0 && <p className="text-muted-foreground">{t("profile.noMsgs")}</p>}
             {msgs.map((m) => (
               <Card key={m.id} className="p-3 text-sm">
                 <p className="text-xs text-muted-foreground">
-                  {m.sender_id === user?.id ? "You sent" : "Received"} · {new Date(m.created_at).toLocaleString()}
+                  {m.sender_id === user?.id ? t("profile.youSent") : t("profile.received")} · {new Date(m.created_at).toLocaleString()}
                 </p>
                 <p>{m.message}</p>
               </Card>
