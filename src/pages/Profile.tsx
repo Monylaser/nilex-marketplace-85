@@ -54,7 +54,7 @@ const Profile = () => {
       city: profile.city,
     }).eq("id", user.id);
     if (error) return toast.error(error.message);
-    toast.success("Profile updated");
+    toast.success(t("profile.updated"));
   };
 
   const deleteAd = async (id: string) => {
