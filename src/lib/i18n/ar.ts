@@ -143,6 +143,25 @@ export const ar: Record<string, string> = {
   "profile.points": "النقاط",
   "profile.verification": "التوثيق",
   "profile.notifications": "الإشعارات",
+  "profile.level": "المستوى {n}",
+  "profile.pts": "{n} نقطة",
+  "profile.updated": "تم تحديث الملف",
+  "profile.adDeleted": "تم حذف الإعلان",
+  "profile.noAds": "لم تنشر أي إعلانات بعد.",
+  "profile.noFavs": "لا توجد مفضلات بعد.",
+  "profile.noMsgs": "لا توجد رسائل بعد.",
+  "profile.youSent": "أرسلت",
+  "profile.received": "مستلمة",
+  "profile.sellerAnalytics": "تحليلات البائع",
+  "profile.sellerAnalytics.desc": "المشاهدات والاستفسارات والمفضلات وأفضل الإعلانات",
+  "profile.open": "فتح",
+  "profile.viewsLabel": "{n} مشاهدة",
+
+  // Auth toasts
+  "auth.created": "تم إنشاء الحساب! أهلًا بك في نايلكس.",
+  "auth.welcomeBack": "أهلًا بعودتك!",
+  "auth.failed": "فشل تسجيل الدخول",
+  "auth.terms": "بمتابعتك فإنك توافق على شروط خدمة نايلكس.",
 
   // Appearance
   "appear.title": "المظهر",
