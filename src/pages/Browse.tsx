@@ -219,7 +219,7 @@ const Browse = () => {
                       {img ? (
                         <img src={img} alt={ad.title} className="h-full w-full object-cover" />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-muted-foreground text-xs">No image</div>
+                        <div className="flex h-full items-center justify-center text-muted-foreground text-xs">{t("ad.noImage")}</div>
                       )}
                       {ad.is_boosted && (
                         <Badge className="absolute left-2 top-2 gap-1 bg-gold text-accent-foreground">
