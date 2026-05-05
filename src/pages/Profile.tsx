@@ -150,11 +150,11 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="msgs" className="mt-6 space-y-2">
-            {msgs.length === 0 && <p className="text-muted-foreground">No messages yet.</p>}
+            {msgs.length === 0 && <p className="text-muted-foreground">{t("profile.noMsgs")}</p>}
             {msgs.map((m) => (
               <Card key={m.id} className="p-3 text-sm">
                 <p className="text-xs text-muted-foreground">
-                  {m.sender_id === user?.id ? "You sent" : "Received"} · {new Date(m.created_at).toLocaleString()}
+                  {m.sender_id === user?.id ? t("profile.youSent") : t("profile.received")} · {new Date(m.created_at).toLocaleString()}
                 </p>
                 <p>{m.message}</p>
               </Card>
