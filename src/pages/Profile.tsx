@@ -60,7 +60,7 @@ const Profile = () => {
   const deleteAd = async (id: string) => {
     const { error } = await supabase.from("ads").delete().eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Ad deleted");
+    toast.success(t("profile.adDeleted"));
     refresh();
   };
 
