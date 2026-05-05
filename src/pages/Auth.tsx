@@ -127,7 +127,7 @@ const Auth = () => {
         </Button>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          By continuing you agree to Nilex's terms of service.
+          {t("auth.terms")}
         </p>
       </motion.div>
     </div>
