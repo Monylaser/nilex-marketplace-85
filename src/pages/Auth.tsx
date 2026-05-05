@@ -39,15 +39,15 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-        toast.success("Account created! Welcome to Nilex.");
+        toast.success(t("auth.created"));
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success("Welcome back!");
+        toast.success(t("auth.welcomeBack"));
       }
       navigate("/");
     } catch (err: any) {
-      toast.error(err.message || "Authentication failed");
+      toast.error(err.message || t("auth.failed"));
     } finally {
       setBusy(false);
     }
