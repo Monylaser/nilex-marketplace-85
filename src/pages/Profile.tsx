@@ -83,8 +83,8 @@ const Profile = () => {
             <p className="text-sm text-muted-foreground">{profile?.email}</p>
           </div>
           <div className="flex gap-2">
-            <Badge variant="secondary">Level {points?.level || 1}</Badge>
-            <Badge className="bg-gold text-accent-foreground">{points?.points || 0} pts</Badge>
+            <Badge variant="secondary">{t("profile.level", { n: points?.level || 1 })}</Badge>
+            <Badge className="bg-gold text-accent-foreground">{t("profile.pts", { n: points?.points || 0 })}</Badge>
           </div>
         </div>
 
