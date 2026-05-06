@@ -94,6 +94,24 @@ const AdminModeration = () => {
       .eq("id", id);
     setBusy(false);
     if (error) return toast.error(error.message);
+
+    if (user?.id) {
+      const action = status === "active" ? "ad.approve" : status === "rejected" ? "ad.reject" : "ad.flag";
+      const ad = ads.find((a) => a.id === id);
+      await supabase.from("audit_logs" as any).insert({
+        admin_id: user.id,
+        action,
+        target_type: "ad",
+        target_id: id,
+        details: {
+          title: ad?.title ?? null,
+          previous_status: ad?.status ?? null,
+          new_status: status,
+          rejection_reason,
+        },
+      });
+    }
+
     toast.success(
       status === "active" ? "Ad approved" : status === "rejected" ? "Ad rejected" : "Ad flagged",
     );
