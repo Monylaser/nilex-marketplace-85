@@ -46,7 +46,7 @@ const Browse = () => {
 
   useEffect(() => {
     Promise.all([
-      supabase.from("categories").select("id,name,slug").order("sort_order"),
+      supabase.from("categories").select("id,name,slug").eq("is_visible", true).order("sort_order"),
       supabase.from("governorates").select("id,name").order("name"),
     ]).then(([c, g]) => {
       setCategories(c.data || []);

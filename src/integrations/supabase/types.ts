@@ -484,6 +484,7 @@ export type Database = {
           created_at: string
           icon: string | null
           id: number
+          is_visible: boolean
           name: string
           name_ar: string | null
           slug: string
@@ -495,6 +496,7 @@ export type Database = {
           created_at?: string
           icon?: string | null
           id?: number
+          is_visible?: boolean
           name: string
           name_ar?: string | null
           slug: string
@@ -506,6 +508,7 @@ export type Database = {
           created_at?: string
           icon?: string | null
           id?: number
+          is_visible?: boolean
           name?: string
           name_ar?: string | null
           slug?: string
