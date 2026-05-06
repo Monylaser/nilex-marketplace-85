@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { Shield, LayoutDashboard, Megaphone, Users, Tag, Image, Zap, Search, ShieldCheck } from "lucide-react";
+import { Shield, LayoutDashboard, Megaphone, Users, Tag, Image, Zap, Search, ShieldCheck, ShieldAlert } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useT } from "@/lib/i18n";
 
