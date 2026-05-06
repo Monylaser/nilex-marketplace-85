@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { Shield, LayoutDashboard, Megaphone, Users, Tag, Image, Zap, Search, ShieldCheck } from "lucide-react";
+import { Shield, LayoutDashboard, Megaphone, Users, Tag, Image, Zap, Search, ShieldCheck, ShieldAlert } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useT } from "@/lib/i18n";
 
@@ -7,6 +7,7 @@ const AdminLayout = () => {
   const { t } = useT();
   const items = [
     { to: "/admin", label: t("admin.dashboard"), icon: LayoutDashboard, end: true },
+    { to: "/admin/moderation", label: t("admin.moderation") || "Moderation", icon: ShieldAlert },
     { to: "/admin/ads", label: t("admin.ads"), icon: Megaphone },
     { to: "/admin/users", label: t("admin.users"), icon: Users },
     { to: "/admin/categories", label: t("admin.categories"), icon: Tag },
