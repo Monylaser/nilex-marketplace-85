@@ -140,7 +140,10 @@ export type Database = {
           is_boosted: boolean
           latitude: number | null
           longitude: number | null
+          moderated_at: string | null
+          moderated_by: string | null
           price: number
+          rejection_reason: string | null
           status: Database["public"]["Enums"]["ad_status"]
           subcategory: string | null
           title: string
@@ -165,7 +168,10 @@ export type Database = {
           is_boosted?: boolean
           latitude?: number | null
           longitude?: number | null
+          moderated_at?: string | null
+          moderated_by?: string | null
           price?: number
+          rejection_reason?: string | null
           status?: Database["public"]["Enums"]["ad_status"]
           subcategory?: string | null
           title: string
@@ -190,7 +196,10 @@ export type Database = {
           is_boosted?: boolean
           latitude?: number | null
           longitude?: number | null
+          moderated_at?: string | null
+          moderated_by?: string | null
           price?: number
+          rejection_reason?: string | null
           status?: Database["public"]["Enums"]["ad_status"]
           subcategory?: string | null
           title?: string
@@ -1236,6 +1245,7 @@ export type Database = {
         | "sold"
         | "expired"
         | "rejected"
+        | "flagged"
       app_role: "admin" | "moderator" | "user"
       boost_status: "pending" | "active" | "expired" | "cancelled"
       escrow_status:
@@ -1375,7 +1385,15 @@ export const Constants = {
   public: {
     Enums: {
       ad_condition: ["new", "used", "refurbished"],
-      ad_status: ["draft", "pending", "active", "sold", "expired", "rejected"],
+      ad_status: [
+        "draft",
+        "pending",
+        "active",
+        "sold",
+        "expired",
+        "rejected",
+        "flagged",
+      ],
       app_role: ["admin", "moderator", "user"],
       boost_status: ["pending", "active", "expired", "cancelled"],
       escrow_status: [
