@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Trash2, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import NotificationSettings from "@/components/NotificationSettings";
+import UserNotifications from "@/components/UserNotifications";
 import VerificationPanel from "@/components/VerificationPanel";
 import { useT } from "@/lib/i18n";
 
@@ -93,6 +94,7 @@ const Profile = () => {
             <TabsTrigger value="ads">{t("profile.myAds")} ({myAds.length})</TabsTrigger>
             <TabsTrigger value="favs">{t("profile.favorites")} ({favs.length})</TabsTrigger>
             <TabsTrigger value="msgs">{t("nav.messages")}</TabsTrigger>
+            <TabsTrigger value="notifs">الإشعارات</TabsTrigger>
             <TabsTrigger value="profile">{t("nav.profile")}</TabsTrigger>
             <TabsTrigger value="verify">{t("profile.verification")}</TabsTrigger>
             <TabsTrigger value="settings">{t("profile.notifications")}</TabsTrigger>
@@ -159,6 +161,10 @@ const Profile = () => {
                 <p>{m.message}</p>
               </Card>
             ))}
+          </TabsContent>
+
+          <TabsContent value="notifs" className="mt-6">
+            <UserNotifications />
           </TabsContent>
 
           <TabsContent value="profile" className="mt-6 max-w-lg space-y-4">
