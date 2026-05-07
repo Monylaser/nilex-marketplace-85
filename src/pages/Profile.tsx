@@ -163,6 +163,10 @@ const Profile = () => {
             ))}
           </TabsContent>
 
+          <TabsContent value="notifs" className="mt-6">
+            <UserNotifications />
+          </TabsContent>
+
           <TabsContent value="profile" className="mt-6 max-w-lg space-y-4">
             <div className="space-y-2"><Label>{t("common.name")}</Label>
               <Input value={profile?.name || ""} onChange={(e) => setProfile({ ...profile, name: e.target.value })} /></div>
