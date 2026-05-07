@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Trash2, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import NotificationSettings from "@/components/NotificationSettings";
+import UserNotifications from "@/components/UserNotifications";
 import VerificationPanel from "@/components/VerificationPanel";
 import { useT } from "@/lib/i18n";
 
