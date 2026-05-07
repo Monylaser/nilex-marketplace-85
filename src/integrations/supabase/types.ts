@@ -869,6 +869,7 @@ export type Database = {
           governorate: string | null
           id: string
           is_active: boolean
+          is_banned: boolean
           last_seen: string | null
           name: string | null
           notify_chat_enabled: boolean
@@ -876,6 +877,7 @@ export type Database = {
           notify_sound_muted: boolean
           phone: string | null
           phone_verified_at: string | null
+          strike_count: number
           total_points: number
           updated_at: string
           verification_level: number
@@ -889,6 +891,7 @@ export type Database = {
           governorate?: string | null
           id: string
           is_active?: boolean
+          is_banned?: boolean
           last_seen?: string | null
           name?: string | null
           notify_chat_enabled?: boolean
@@ -896,6 +899,7 @@ export type Database = {
           notify_sound_muted?: boolean
           phone?: string | null
           phone_verified_at?: string | null
+          strike_count?: number
           total_points?: number
           updated_at?: string
           verification_level?: number
@@ -909,6 +913,7 @@ export type Database = {
           governorate?: string | null
           id?: string
           is_active?: boolean
+          is_banned?: boolean
           last_seen?: string | null
           name?: string | null
           notify_chat_enabled?: boolean
@@ -916,6 +921,7 @@ export type Database = {
           notify_sound_muted?: boolean
           phone?: string | null
           phone_verified_at?: string | null
+          strike_count?: number
           total_points?: number
           updated_at?: string
           verification_level?: number
