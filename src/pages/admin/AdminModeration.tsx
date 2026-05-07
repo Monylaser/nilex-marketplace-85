@@ -168,7 +168,7 @@ const AdminModeration = () => {
     const reason = reasonNote.trim()
       ? `${reasonPreset}: ${reasonNote.trim()}`
       : reasonPreset;
-    moderate(selected.id, "rejected", reason);
+    moderate(selected.id, "rejected", reason, reasonPreset);
   };
 
   const statusBadge = (s: string) => {
