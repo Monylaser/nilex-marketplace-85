@@ -94,6 +94,7 @@ const Profile = () => {
             <TabsTrigger value="ads">{t("profile.myAds")} ({myAds.length})</TabsTrigger>
             <TabsTrigger value="favs">{t("profile.favorites")} ({favs.length})</TabsTrigger>
             <TabsTrigger value="msgs">{t("nav.messages")}</TabsTrigger>
+            <TabsTrigger value="notifs">الإشعارات</TabsTrigger>
             <TabsTrigger value="profile">{t("nav.profile")}</TabsTrigger>
             <TabsTrigger value="verify">{t("profile.verification")}</TabsTrigger>
             <TabsTrigger value="settings">{t("profile.notifications")}</TabsTrigger>
