@@ -34,14 +34,15 @@ type Ad = {
 };
 
 const REJECT_REASONS = [
-  "Ethical violation",
-  "Security concern",
-  "Suspected fraud",
-  "Prohibited item",
-  "Misleading information",
-  "Duplicate listing",
-  "Other",
+  "Inappropriate/Ethical Violation",
+  "Potential Fraud/Scam",
+  "Incomplete/Unclear Information",
+  "Wrong Category",
+  "Duplicate Listing",
+  "Prohibited Items (Legal)",
 ];
+
+const STRIKE_REASONS = ["Inappropriate/Ethical Violation", "Potential Fraud/Scam"];
 
 const AdminModeration = () => {
   const { user } = useAuth();
