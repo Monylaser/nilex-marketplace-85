@@ -78,12 +78,43 @@ const AdminModeration = () => {
     a.governorate?.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const notifyUser = async (userId: string, ad: Ad | undefined, reason: string) => {
+    await supabase.from("notifications").insert({
+      user_id: userId,
+      type: "ad_rejected",
+      title: "Your ad was rejected",
+      body: `"${ad?.title ?? "Your ad"}" was rejected. Reason: ${reason}. Please edit your ad to fix the issue and resubmit.`,
+      data_json: { ad_id: ad?.id, reason },
+    } as any);
+  };
+
+  const applyStrike = async (userId: string, preset: string, ad: Ad | undefined) => {
+    if (!STRIKE_REASONS.includes(preset)) return;
+    const { data: prof } = await supabase
+      .from("profiles").select("strike_count,is_banned").eq("id", userId).maybeSingle();
+    const newCount = ((prof as any)?.strike_count ?? 0) + 1;
+    const shouldBan = newCount >= 3;
+    await supabase.from("profiles")
+      .update({ strike_count: newCount, is_banned: shouldBan || (prof as any)?.is_banned } as any)
+      .eq("id", userId);
+    if (user?.id) {
+      await supabase.from("audit_logs" as any).insert({
+        admin_id: user.id,
+        action: shouldBan ? "user.ban" : "user.strike",
+        target_type: "user", target_id: userId,
+        details: { ad_id: ad?.id, reason: preset, strike_count: newCount },
+      });
+    }
+  };
+
   const moderate = async (
     id: string,
     status: "active" | "rejected" | "flagged",
     rejection_reason: string | null = null,
+    reasonPresetArg?: string,
   ) => {
     setBusy(true);
+    const ad = ads.find((a) => a.id === id);
     const { error } = await supabase
       .from("ads")
       .update({
@@ -98,7 +129,6 @@ const AdminModeration = () => {
 
     if (user?.id) {
       const action = status === "active" ? "ad.approve" : status === "rejected" ? "ad.reject" : "ad.flag";
-      const ad = ads.find((a) => a.id === id);
       await supabase.from("audit_logs" as any).insert({
         admin_id: user.id,
         action,
@@ -113,9 +143,13 @@ const AdminModeration = () => {
       });
     }
 
-    toast.success(
-      status === "active" ? "Ad approved" : status === "rejected" ? "Ad rejected" : "Ad flagged",
-    );
+    if (status === "rejected" && ad) {
+      await notifyUser(ad.user_id, ad, rejection_reason || "Policy violation");
+      if (reasonPresetArg) await applyStrike(ad.user_id, reasonPresetArg, ad);
+      toast.success("Ad rejected and user notified");
+    } else {
+      toast.success(status === "active" ? "Ad approved" : "Ad flagged");
+    }
     setSelected(null);
     setRejectOpen(false);
     setReasonNote("");
