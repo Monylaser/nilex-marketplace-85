@@ -23,7 +23,7 @@ const PROJECT_ASSETS = [
   { name: "Nilex logo", url: nilexLogo },
 ];
 
-const POSITIONS = ["home_top", "home_middle", "browse_top", "sidebar"];
+const POSITIONS = ["home_top", "home_middle", "home_left", "home_right", "browse_top", "sidebar"];
 
 const AdminBanners = () => {
   const [items, setItems] = useState<any[]>([]);
