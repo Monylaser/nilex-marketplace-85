@@ -36,9 +36,19 @@ const POSITION_DEFAULTS: Record<string, { w: number; h: number }> = {
 
 const AdminBanners = () => {
   const [items, setItems] = useState<any[]>([]);
-  const [form, setForm] = useState({ title: "", image: "", link: "", position: "home_top" });
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    image: "",
+    link: "",
+    position: "home_top",
+    width_px: POSITION_DEFAULTS.home_top.w,
+    height_px: POSITION_DEFAULTS.home_top.h,
+  });
+
+  const setPosition = (v: string) => {
+    const d = POSITION_DEFAULTS[v] ?? { w: 0, h: 0 };
+    setForm((f) => ({ ...f, position: v, width_px: d.w, height_px: d.h }));
+  };
 
   const load = () =>
     supabase.from("banners").select("*").order("sort_order").then(({ data }) => setItems(data || []));
@@ -67,13 +77,21 @@ const AdminBanners = () => {
     if (!form.title || !form.image) return toast.error("Title & image required");
     const { error } = await supabase.from("banners").insert(form);
     if (error) return toast.error(error.message);
-    setForm({ title: "", image: "", link: "", position: "home_top" });
+    const d = POSITION_DEFAULTS.home_top;
+    setForm({ title: "", image: "", link: "", position: "home_top", width_px: d.w, height_px: d.h });
     toast.success("Banner added");
     load();
   };
 
   const toggle = async (id: number, active: boolean) => {
     await supabase.from("banners").update({ is_active: !active }).eq("id", id);
+    load();
+  };
+
+  const updateSize = async (id: number, width_px: number | null, height_px: number | null) => {
+    const { error } = await supabase.from("banners").update({ width_px, height_px }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Size updated");
     load();
   };
 
