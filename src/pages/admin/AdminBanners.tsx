@@ -44,6 +44,8 @@ const AdminBanners = () => {
     width_px: POSITION_DEFAULTS.home_top.w,
     height_px: POSITION_DEFAULTS.home_top.h,
   });
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const setPosition = (v: string) => {
     const d = POSITION_DEFAULTS[v] ?? { w: 0, h: 0 };
