@@ -200,6 +200,7 @@ const AdminBanners = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Preview</TableHead><TableHead>Title</TableHead><TableHead>Position</TableHead>
+              <TableHead>Size (px)</TableHead>
               <TableHead>Active</TableHead><TableHead>Stats</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -210,6 +211,21 @@ const AdminBanners = () => {
                 <TableCell><img src={b.image} alt="" className="h-10 w-16 object-cover rounded border" /></TableCell>
                 <TableCell className="font-medium">{b.title}</TableCell>
                 <TableCell>{b.position}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <Input type="number" defaultValue={b.width_px ?? ""} className="h-8 w-20"
+                      onBlur={(e) => {
+                        const w = Number(e.target.value) || null;
+                        if (w !== b.width_px) updateSize(b.id, w, b.height_px);
+                      }} />
+                    <span className="text-muted-foreground">×</span>
+                    <Input type="number" defaultValue={b.height_px ?? ""} className="h-8 w-20"
+                      onBlur={(e) => {
+                        const h = Number(e.target.value) || null;
+                        if (h !== b.height_px) updateSize(b.id, b.width_px, h);
+                      }} />
+                  </div>
+                </TableCell>
                 <TableCell>{b.is_active ? "Yes" : "No"}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">{b.views} views · {b.clicks} clicks</TableCell>
                 <TableCell className="text-right space-x-2">
