@@ -49,7 +49,7 @@ const SideAdColumns = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     supabase
       .from("banners")
-      .select("id,title,image,link,position")
+      .select("id,title,image,link,position,width_px,height_px")
       .eq("is_active", true)
       .in("position", ["home_left", "home_right"])
       .order("sort_order")
