@@ -115,12 +115,27 @@ const AdminBanners = () => {
           <div><Label>Link (optional)</Label><Input value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} placeholder="https://..." /></div>
           <div>
             <Label>Position</Label>
-            <Select value={form.position} onValueChange={(v) => setForm({ ...form, position: v })}>
+            <Select value={form.position} onValueChange={setPosition}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {POSITIONS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground mt-1">
+              Recommended: {form.width_px}×{form.height_px}px
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Width (px)</Label>
+              <Input type="number" min={0} value={form.width_px}
+                onChange={(e) => setForm({ ...form, width_px: Number(e.target.value) || 0 })} />
+            </div>
+            <div>
+              <Label>Height (px)</Label>
+              <Input type="number" min={0} value={form.height_px}
+                onChange={(e) => setForm({ ...form, height_px: Number(e.target.value) || 0 })} />
+            </div>
           </div>
         </div>
 
