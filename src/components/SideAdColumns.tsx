@@ -7,16 +7,24 @@ interface Banner {
   image: string;
   link: string | null;
   position: string;
+  width_px: number | null;
+  height_px: number | null;
 }
 
 const Column = ({ items }: { items: Banner[] }) => (
-  <div className="flex flex-col gap-4">
+  <div className="flex flex-col items-center gap-4">
     {items.map((b) => {
+      const style: React.CSSProperties = {
+        width: b.width_px ? `${b.width_px}px` : "100%",
+        maxWidth: "100%",
+        aspectRatio: b.width_px && b.height_px ? `${b.width_px} / ${b.height_px}` : undefined,
+      };
       const content = (
         <img
           src={b.image}
           alt={b.title}
-          className="w-full rounded-xl border border-border object-cover shadow-sm transition hover:shadow-premium"
+          style={style}
+          className="rounded-xl border border-border object-cover shadow-sm transition hover:shadow-premium"
         />
       );
       return (
@@ -41,7 +49,7 @@ const SideAdColumns = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     supabase
       .from("banners")
-      .select("id,title,image,link,position")
+      .select("id,title,image,link,position,width_px,height_px")
       .eq("is_active", true)
       .in("position", ["home_left", "home_right"])
       .order("sort_order")

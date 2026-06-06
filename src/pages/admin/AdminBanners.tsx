@@ -25,11 +25,32 @@ const PROJECT_ASSETS = [
 
 const POSITIONS = ["home_top", "home_middle", "home_left", "home_right", "browse_top", "sidebar"];
 
+const POSITION_DEFAULTS: Record<string, { w: number; h: number }> = {
+  home_top: { w: 1200, h: 200 },
+  home_middle: { w: 1200, h: 150 },
+  home_left: { w: 180, h: 600 },
+  home_right: { w: 180, h: 600 },
+  browse_top: { w: 1200, h: 180 },
+  sidebar: { w: 300, h: 250 },
+};
+
 const AdminBanners = () => {
   const [items, setItems] = useState<any[]>([]);
-  const [form, setForm] = useState({ title: "", image: "", link: "", position: "home_top" });
+  const [form, setForm] = useState({
+    title: "",
+    image: "",
+    link: "",
+    position: "home_top",
+    width_px: POSITION_DEFAULTS.home_top.w,
+    height_px: POSITION_DEFAULTS.home_top.h,
+  });
   const [pickerOpen, setPickerOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  const setPosition = (v: string) => {
+    const d = POSITION_DEFAULTS[v] ?? { w: 0, h: 0 };
+    setForm((f) => ({ ...f, position: v, width_px: d.w, height_px: d.h }));
+  };
 
   const load = () =>
     supabase.from("banners").select("*").order("sort_order").then(({ data }) => setItems(data || []));
@@ -58,13 +79,21 @@ const AdminBanners = () => {
     if (!form.title || !form.image) return toast.error("Title & image required");
     const { error } = await supabase.from("banners").insert(form);
     if (error) return toast.error(error.message);
-    setForm({ title: "", image: "", link: "", position: "home_top" });
+    const d = POSITION_DEFAULTS.home_top;
+    setForm({ title: "", image: "", link: "", position: "home_top", width_px: d.w, height_px: d.h });
     toast.success("Banner added");
     load();
   };
 
   const toggle = async (id: number, active: boolean) => {
     await supabase.from("banners").update({ is_active: !active }).eq("id", id);
+    load();
+  };
+
+  const updateSize = async (id: number, width_px: number | null, height_px: number | null) => {
+    const { error } = await supabase.from("banners").update({ width_px, height_px }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Size updated");
     load();
   };
 
@@ -86,12 +115,27 @@ const AdminBanners = () => {
           <div><Label>Link (optional)</Label><Input value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} placeholder="https://..." /></div>
           <div>
             <Label>Position</Label>
-            <Select value={form.position} onValueChange={(v) => setForm({ ...form, position: v })}>
+            <Select value={form.position} onValueChange={setPosition}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {POSITIONS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground mt-1">
+              Recommended: {form.width_px}×{form.height_px}px
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Width (px)</Label>
+              <Input type="number" min={0} value={form.width_px}
+                onChange={(e) => setForm({ ...form, width_px: Number(e.target.value) || 0 })} />
+            </div>
+            <div>
+              <Label>Height (px)</Label>
+              <Input type="number" min={0} value={form.height_px}
+                onChange={(e) => setForm({ ...form, height_px: Number(e.target.value) || 0 })} />
+            </div>
           </div>
         </div>
 
@@ -156,6 +200,7 @@ const AdminBanners = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Preview</TableHead><TableHead>Title</TableHead><TableHead>Position</TableHead>
+              <TableHead>Size (px)</TableHead>
               <TableHead>Active</TableHead><TableHead>Stats</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -166,6 +211,21 @@ const AdminBanners = () => {
                 <TableCell><img src={b.image} alt="" className="h-10 w-16 object-cover rounded border" /></TableCell>
                 <TableCell className="font-medium">{b.title}</TableCell>
                 <TableCell>{b.position}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <Input type="number" defaultValue={b.width_px ?? ""} className="h-8 w-20"
+                      onBlur={(e) => {
+                        const w = Number(e.target.value) || null;
+                        if (w !== b.width_px) updateSize(b.id, w, b.height_px);
+                      }} />
+                    <span className="text-muted-foreground">×</span>
+                    <Input type="number" defaultValue={b.height_px ?? ""} className="h-8 w-20"
+                      onBlur={(e) => {
+                        const h = Number(e.target.value) || null;
+                        if (h !== b.height_px) updateSize(b.id, b.width_px, h);
+                      }} />
+                  </div>
+                </TableCell>
                 <TableCell>{b.is_active ? "Yes" : "No"}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">{b.views} views · {b.clicks} clicks</TableCell>
                 <TableCell className="text-right space-x-2">
