@@ -319,6 +319,7 @@ export type Database = {
           clicks: number
           created_at: string
           end_date: string | null
+          height_px: number | null
           id: number
           image: string
           is_active: boolean
@@ -328,11 +329,13 @@ export type Database = {
           start_date: string | null
           title: string
           views: number
+          width_px: number | null
         }
         Insert: {
           clicks?: number
           created_at?: string
           end_date?: string | null
+          height_px?: number | null
           id?: number
           image: string
           is_active?: boolean
@@ -342,11 +345,13 @@ export type Database = {
           start_date?: string | null
           title: string
           views?: number
+          width_px?: number | null
         }
         Update: {
           clicks?: number
           created_at?: string
           end_date?: string | null
+          height_px?: number | null
           id?: number
           image?: string
           is_active?: boolean
@@ -356,6 +361,7 @@ export type Database = {
           start_date?: string | null
           title?: string
           views?: number
+          width_px?: number | null
         }
         Relationships: []
       }
