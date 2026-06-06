@@ -193,6 +193,37 @@ const AdminBanners = () => {
             Add banner
           </Button>
         </div>
+
+        <div className="md:col-span-2 space-y-2">
+          <div className="flex items-center justify-between">
+            <Label>Live preview</Label>
+            <span className="text-xs text-muted-foreground">
+              {form.width_px}×{form.height_px}px @ actual size (scaled to fit)
+            </span>
+          </div>
+          <div className="rounded-md border bg-muted/40 p-4 flex items-center justify-center min-h-[200px] overflow-auto">
+            {form.image && form.width_px > 0 && form.height_px > 0 ? (
+              <div
+                className="bg-background shadow-sm"
+                style={{
+                  width: `${form.width_px}px`,
+                  height: `${form.height_px}px`,
+                  maxWidth: "100%",
+                }}
+              >
+                <img
+                  src={form.image}
+                  alt={form.title || "preview"}
+                  className="w-full h-full object-cover rounded-md border"
+                />
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Choose an image and set width/height to preview.
+              </p>
+            )}
+          </div>
+        </div>
       </Card>
 
       <Card className="mt-6 overflow-x-auto">
