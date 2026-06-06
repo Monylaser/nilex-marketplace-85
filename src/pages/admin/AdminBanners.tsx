@@ -25,6 +25,15 @@ const PROJECT_ASSETS = [
 
 const POSITIONS = ["home_top", "home_middle", "home_left", "home_right", "browse_top", "sidebar"];
 
+const POSITION_DEFAULTS: Record<string, { w: number; h: number }> = {
+  home_top: { w: 1200, h: 200 },
+  home_middle: { w: 1200, h: 150 },
+  home_left: { w: 180, h: 600 },
+  home_right: { w: 180, h: 600 },
+  browse_top: { w: 1200, h: 180 },
+  sidebar: { w: 300, h: 250 },
+};
+
 const AdminBanners = () => {
   const [items, setItems] = useState<any[]>([]);
   const [form, setForm] = useState({ title: "", image: "", link: "", position: "home_top" });
